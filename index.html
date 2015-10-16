@@ -2,37 +2,31 @@
 <html>
   <head>
     <title>JUUH</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-    </style>
   </head>
   <body>
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="mes" autocomplete="off" onkeydown="hello(event)" onkeyup="toggle()"/><button>Send</button>
-    </form>
+    <h2 id="otsikko"> MOI </h2>
 
     <audio id="A" src="glass_1.ogg" type="audio/ogg" preload="auto"></audio>
+    <audio id="W" src="glass_2.ogg" type="audio/ogg" preload="auto"></audio>
     <audio id="S" src="glass_3.ogg" type="audio/ogg" preload="auto"></audio>
+    <audio id="E" src="glass_4.ogg" type="audio/ogg" preload="auto"></audio>
     <audio id="D" src="glass_5.ogg" type="audio/ogg" preload="auto"></audio>
     <audio id="F" src="glass_6.ogg" type="audio/ogg" preload="auto"></audio>
+    <audio id="T" src="glass_7.ogg" type="audio/ogg" preload="auto"></audio>
     <audio id="G" src="glass_8.ogg" type="audio/ogg" preload="auto"></audio>
+    <audio id="Y" src="glass_9.ogg" type="audio/ogg" preload="auto"></audio>
     <audio id="H" src="glass_10.ogg" type="audio/ogg" preload="auto"></audio>
+    <audio id="U" src="glass_11.ogg" type="audio/ogg" preload="auto"></audio>
     <audio id="J" src="glass_12.ogg" type="audio/ogg" preload="auto"></audio>
     <audio id="K" src="glass_13.ogg" type="audio/ogg" preload="auto"></audio>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
+
     var socket = io();
     var pressed = true;
+    var soittajia = 0;
 
     document.onkeyup = function toggle(){
       pressed = true;
@@ -48,20 +42,13 @@
       }
     }
 
-    $('form').submit(function(){
-      socket.emit('viesti', $('#mes').val());
-      $('#mes').val('');
-      return false;
+    socket.on('soittajia', function(maara){
+      document.getElementById("otsikko").innerHTML = "Käyttäjiä: " + maara;
     });
 
     socket.on('painallus', function(key){
       document.getElementById(key).play();
     });
-
-    socket.on('viesti', function(msg){
-      $('#messages').append($('<li>').text(msg));
-    });
-
 
     </script>
   </body>
