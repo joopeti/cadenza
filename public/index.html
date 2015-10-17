@@ -2,36 +2,54 @@
 <html>
   <head>
     <title>dissodance</title>
+    <link rel="stylesheet" href="tyyli.css">
   </head>
   <body>
-    <h2 id="otsikko"> MOI </h2>
+    <h1 class="centered" id="otsikko"> MOI </h1>
+    <div class="container">
+      <ul id="black">
+        <li><a id="W" href="#" onmousedown="pressedKey('W')">W</a></li>
+        <li><a id="E" href="#" onmousedown="pressedKey('E')">E</a></li>
+        <li id="empty"></li>
+        <li><a id="T" href="#" onmousedown="pressedKey('T')">T</a></li>
+        <li><a id="Y" href="#" onmousedown="pressedKey('Y')">Y</a></li>
+        <li><a id="U" href="#" onmousedown="pressedKey('U')">U</a></li>
+      </ul>
+      <ul id="white">
+        <li><a id="A" href="#" onmousedown="pressedKey('A')">A</a></li>
+        <li><a id="S" href="#" onmousedown="pressedKey('S')">S</a></li>
+        <li><a id="D" href="#" onmousedown="pressedKey('D')">D</a></li>
+        <li><a id="F" href="#" onmousedown="pressedKey('F')">F</a></li>
+        <li><a id="G" href="#" onmousedown="pressedKey('G')">G</a></li>
+        <li><a id="H" href="#" onmousedown="pressedKey('H')">H</a></li>
+        <li><a id="J" href="#" onmousedown="pressedKey('J')">J</a></li>
+        <li><a id="K" href="#" onmousedown="pressedKey('K')">K</a></li>
+      </ul>
+
+    </div>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/code.jquery.com/jquery-1.11.3.min.js"></script>
     <script src="/howler.min.js"></script>
     <script>
 
     var socket = io();
     var soittajia = 0;
-
+    var pressed = []; //tänne mapataan painetut näppäimet
+    var timeout;
     var sound = new Howl({
       urls: ['glass_sprite.ogg'],
       sprite: {
-        A: [0,2000],
-        W: [2000, 2000],
-        S: [4000, 2000],
-        E: [6000, 2000],
-        D: [8000, 2000],
-        F: [10000, 2000],
-        T: [12000, 2000],
-        G: [14000, 2000],
-        Y: [16000, 2000],
-        H: [18000, 2000],
-        U: [20000, 2000],
-        J: [22000, 2000],
-        K: [24000, 2000]
+        A: [0,2000], W: [2000, 2000], S: [4000, 2000], E: [6000, 2000], D: [8000, 2000], F: [10000, 2000], T: [12000, 2000], G: [14000, 2000],
+        Y: [16000, 2000], H: [18000, 2000], U: [20000, 2000], J: [22000, 2000], K: [24000, 2000]
       }
     });
 
-    var pressed = []; //tänne mapataan painetut näppäimet
+    function pressedKey(k){
+      socket.emit('painallus', k);
+      var button = document.getElementById(k);
+      button.style.backgroundColor = "orange";
+    }
+
     document.onkeyup = function toggle(k){
       pressed[k.keyCode] = false; // merkitsee näppäimen vapaaksi
     }
@@ -49,11 +67,25 @@
     }
 
     socket.on('soittajia', function(maara){
-      document.getElementById("otsikko").innerHTML = "Käyttäjiä: " + maara;
+      document.getElementById("otsikko").innerHTML = "Soittajia: " + maara;
     });
 
     socket.on('painallus', function(key){
       sound.play(key);
+      var button = document.getElementById(key);
+      var row = button.parentNode.parentNode.getAttribute('id');
+      button.style.backgroundColor = "orange";
+
+      //clearTimeout(timeout);
+      timeout = setTimeout(function(){
+        if(row == "black"){
+          button.style.backgroundColor = "black";
+        } else{
+          button.style.backgroundColor = "white";
+        }
+
+      }, 1000);
+
     });
 
     </script>

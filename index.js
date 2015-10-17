@@ -19,6 +19,7 @@ io.on('connection', function(socket){
 
   socket.on('painallus', function(key){
     io.emit('painallus', key);
+    //console.log("painettiin: " + key);
   });
 
   socket.on('disconnect', function(){
