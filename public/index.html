@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <title>dissodance</title>
+  </head>
+  <body>
+    <h2 id="otsikko"> MOI </h2>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/howler.min.js"></script>
+    <script>
+
+    var socket = io();
+    var soittajia = 0;
+
+    var sound = new Howl({
+      urls: ['glass_sprite.ogg'],
+      sprite: {
+        A: [0,2000],
+        W: [2000, 2000],
+        S: [4000, 2000],
+        E: [6000, 2000],
+        D: [8000, 2000],
+        F: [10000, 2000],
+        T: [12000, 2000],
+        G: [14000, 2000],
+        Y: [16000, 2000],
+        H: [18000, 2000],
+        U: [20000, 2000],
+        J: [22000, 2000],
+        K: [24000, 2000]
+      }
+    });
+
+    var pressed = []; //tänne mapataan painetut näppäimet
+    document.onkeyup = function toggle(k){
+      pressed[k.keyCode] = false; // merkitsee näppäimen vapaaksi
+    }
+
+    document.onkeydown = function hello(k){
+      var check = pressed[k.keyCode] || false;
+      //jos näppäin jo painettuna, ei tehdä mitään
+      if(!check){
+        var keynum = k.which;
+        key = String.fromCharCode(keynum);
+        socket.emit('painallus', key);
+        pressed[k.keyCode] = true;
+        return false;
+      }
+    }
+
+    socket.on('soittajia', function(maara){
+      document.getElementById("otsikko").innerHTML = "Käyttäjiä: " + maara;
+    });
+
+    socket.on('painallus', function(key){
+      sound.play(key);
+    });
+
+    </script>
+  </body>
+</html>
