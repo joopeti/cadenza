@@ -1,93 +1,22 @@
 <!doctype html>
 <html>
   <head>
-    <title>dissodance</title>
-    <link rel="stylesheet" href="tyyli.css">
+    <title>kakofonia</title>
+    <link rel="stylesheet" href="/tyyli.css">
   </head>
   <body>
-    <h1 class="centered" id="otsikko"> MOI </h1>
-    <div class="container">
-      <ul id="black">
-        <li><a id="W" href="#" onmousedown="pressedKey('W')">W</a></li>
-        <li><a id="E" href="#" onmousedown="pressedKey('E')">E</a></li>
-        <li id="empty"></li>
-        <li><a id="T" href="#" onmousedown="pressedKey('T')">T</a></li>
-        <li><a id="Y" href="#" onmousedown="pressedKey('Y')">Y</a></li>
-        <li><a id="U" href="#" onmousedown="pressedKey('U')">U</a></li>
-      </ul>
-      <ul id="white">
-        <li><a id="A" href="#" onmousedown="pressedKey('A')">A</a></li>
-        <li><a id="S" href="#" onmousedown="pressedKey('S')">S</a></li>
-        <li><a id="D" href="#" onmousedown="pressedKey('D')">D</a></li>
-        <li><a id="F" href="#" onmousedown="pressedKey('F')">F</a></li>
-        <li><a id="G" href="#" onmousedown="pressedKey('G')">G</a></li>
-        <li><a id="H" href="#" onmousedown="pressedKey('H')">H</a></li>
-        <li><a id="J" href="#" onmousedown="pressedKey('J')">J</a></li>
-        <li><a id="K" href="#" onmousedown="pressedKey('K')">K</a></li>
-      </ul>
-
-    </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/code.jquery.com/jquery-1.11.3.min.js"></script>
-    <script src="/howler.min.js"></script>
+    <container>
+      <h1>ETUSIVU</h1>
+      <a href="room/DEFAULT">Kuuntele</a>
+      <a href="room/DEFAULT">Soita</a>
+    </container>
     <script>
-
-    var socket = io();
-    var soittajia = 0;
-    var pressed = []; //tänne mapataan painetut näppäimet
-    var timeout;
-    var sound = new Howl({
-      urls: ['glass_sprite.ogg'],
-      sprite: {
-        A: [0,1900], W: [2000, 1900], S: [4000, 1900], E: [6000, 1900], D: [8000, 1900], F: [10000, 1900], T: [12000, 1900], G: [14000, 1900],
-        Y: [16000, 1900], H: [18000, 1900], U: [20000, 1900], J: [22000, 1900], K: [24000, 1900]
-      }
-    });
-
-    function pressedKey(k){
-      socket.emit('painallus', k);
-      var button = document.getElementById(k);
-      button.style.backgroundColor = "orange";
-    }
-
-    document.onkeyup = function toggle(k){
-      pressed[k.keyCode] = false; // merkitsee näppäimen vapaaksi
-    }
-
-    document.onkeydown = function hello(k){
-      var check = pressed[k.keyCode] || false;
-      //jos näppäin jo painettuna, ei tehdä mitään
-      if(!check){
-        var keynum = k.which;
-        key = String.fromCharCode(keynum);
-        socket.emit('painallus', key);
-        pressed[k.keyCode] = true;
-        return false;
-      }
-    }
-
-    socket.on('soittajia', function(maara){
-      document.getElementById("otsikko").innerHTML = "Soittajia: " + maara;
-    });
-
-    socket.on('painallus', function(key){
-      sound.play(key);
-      var button = document.getElementById(key);
-      var row = button.parentNode.parentNode.getAttribute('id');
-      button.style.backgroundColor = "orange";
-
-      //clearTimeout(timeout);
-      timeout = setTimeout(function(){
-        if(row == "black"){
-          button.style.backgroundColor = "black";
-        } else{
-          button.style.backgroundColor = "#E6E6E6";
-        }
-
-      }, 1000);
-
-    });
-
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-68676945-1', 'auto');
+    ga('send', 'pageview');
     </script>
   </body>
 </html>

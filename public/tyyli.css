@@ -12,8 +12,29 @@ background-size: 100% 20px;
 .centered {
   text-align: center;
 }
+#room{
+  float:left;
+  padding-left: 20px;
+}
+#players{
+  float: right;
+  padding-right: 20px;
+}
+
+#roominfo {
+  margin: auto;
+  background-color: #E6E6E6;
+  padding-bottom: 5px;
+  border-width: medium;
+  border-color: black;
+  border-style: solid;
+  border-bottom: none;
+  height: 50px;
+  width: 675px;
+}
+
 .container {
-  width: 650px;
+  width: 675px;
   background-color: #0099CC;
   border-width: medium;
   border-color: black;
@@ -31,33 +52,28 @@ ul#white {
   padding-top: 20px;
   height: 75px;
 }
+ul#drums {
+  padding-top: 20px;
+  height: 75px;
+}
 
-ul#white li, ul#black li{
+ul#white li, ul#black li, ul#drums li{
     display: inline;
 }
 
 ul#black li#empty{
-  padding: 25px 35px;
+  padding: 15px 25px;
   background-color: #0099CC;
 }
 
 
-ul#black li a:hover, ul#white li a:hover {
+button:hover {
     background-color: orange;
 }
-
-ul#black li a {
-    background-color: black;
-    color: white;
-    padding: 25px 30px;
-    text-decoration: none;
-    border-radius: 4px 4px 0 0;
-}
-
-ul#white li a {
+button {
     background-color: #E6E6E6;
     color: black;
-    padding: 40px 30px;
+    padding: 15px 20px;
     text-decoration: none;
     border-radius: 4px 4px 0 0;
 }
