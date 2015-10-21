@@ -1,87 +1,65 @@
 body {
-  background: linear-gradient(
-  to bottom,
-  #5d9634,
-  #5d9634 50%,
-  #538c2b 50%,
-  #538c2b
-);
-background-size: 100% 20px;
+  background-color: black;
+  background-size: 100% 20px;
   font: 13px Helvetica, Arial;
 }
-.centered {
-  text-align: center;
+
+.navbar {
+  margin-bottom: 0 !important;
 }
-#room{
+
+#footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+
+#messageContainer {
+  border-collapse: collapse;
+  background-color: white;
+  padding-bottom: 18px;
+  height: calc(100vh - 90px);
+  width: 100%;
+  border-width: medium;
+  overflow: auto;
+}
+
+#messageField {
+  width: 80%;
+}
+
+#sendButton {
+  width: 20%;
+}
+
+#messageFieldContainer {
+  width: 100%;
+  bottom: 0;
+  left: 0;
+}
+
+#msginfo {
+  background-color: #F2F2F2;
+  height: 14px;
+  text-align: left;
+  color: grey;
+  margin-left: 0px;
+}
+
+#msgcontents {
+  padding: 7px;
+  padding-left: 10px;
+}
+
+#timestamp {
+  float:right;
+}
+
+#room {
   float:left;
   padding-left: 20px;
 }
-#players{
+#osallistujia {
   float: right;
   padding-right: 20px;
-}
-
-#roominfo {
-  margin: auto;
-  background-color: #E6E6E6;
-  padding-bottom: 5px;
-  border-width: medium;
-  border-color: black;
-  border-style: solid;
-  border-bottom: none;
-  height: 50px;
-  width: 675px;
-}
-
-.container {
-  width: 675px;
-  background-color: #0099CC;
-  border-width: medium;
-  border-color: black;
-  border-style: solid;
-  margin: auto;
-}
-
-ul#black {
-  padding-left: 70px;
-  padding-top: 20px;
-  height: 50px;
-}
-
-ul#white {
-  padding-top: 20px;
-  height: 75px;
-}
-ul#drums {
-  padding-top: 20px;
-  height: 75px;
-}
-
-ul#white li, ul#black li, ul#drums li{
-    display: inline;
-}
-
-ul#black li#empty{
-  padding: 15px 25px;
-  background-color: #0099CC;
-}
-
-
-button:hover {
-    background-color: orange;
-}
-button {
-    background-color: #E6E6E6;
-    color: black;
-    padding: 15px 20px;
-    text-decoration: none;
-    border-radius: 4px 4px 0 0;
-}
-
-.kosketin li {
-  background-color: white;
-  width: 30px;
-  height: 100px;
-  border-color: black;
-  border-width: medium;
 }

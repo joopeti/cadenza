@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+  <head>
+    <title>kakofonia</title>
+    <link rel="stylesheet" href="/tyyli.css">
+  </head>
+  <body>
+    <div id="roominfo">
+      <h1 id="room">Huone: </h1>
+      <h1 id="players">Soittajia: </h1>
+    </div>
+    <div class="container">
+      <ul id="drums">
+        <li><button id="1" onmousedown="pressedKey('1')">1</button></li>
+        <li><button id="2" onmousedown="pressedKey('2')">2</button></li>
+        <li><button id="3" onmousedown="pressedKey('3')">3</button></li>
+        <li><button id="4" onmousedown="pressedKey('4')">4</button></li>
+        <li><button id="5" onmousedown="pressedKey('5')">5</button></li>
+        <li><button id="6" onmousedown="pressedKey('6')">6</button></li>
+        <li><button id="7" onmousedown="pressedKey('7')">7</button></li>
+        <li><button id="8" onmousedown="pressedKey('8')">8</button></li>
+      </ul>
+      <ul id="black">
+        <li><button id="W" onmousedown="pressedKey('W')">W</button></li>
+        <li><button id="E" onmousedown="pressedKey('E')">E</button></li>
+        <li id="empty"></li>
+        <li><button id="T" onmousedown="pressedKey('T')">T</button></li>
+        <li><button id="Y" onmousedown="pressedKey('Y')">Y</button></li>
+        <li><button id="U" onmousedown="pressedKey('U')">U</button></li>
+      </ul>
+      <ul id="white">
+        <li><button id="A" onmousedown="pressedKey('A')">A</button></li>
+        <li><button id="S" onmousedown="pressedKey('S')">S</button></li>
+        <li><button id="D" onmousedown="pressedKey('D')">D</button></li>
+        <li><button id="F" onmousedown="pressedKey('F')">F</button></li>
+        <li><button id="G" onmousedown="pressedKey('G')">G</button></li>
+        <li><button id="H" onmousedown="pressedKey('H')">H</button></li>
+        <li><button id="J" onmousedown="pressedKey('J')">J</button></li>
+        <li><button id="K" onmousedown="pressedKey('K')">K</button></li>
+      </ul>
+      <ul id="drums">
+        <li><button id="Z" onmousedown="pressedKey('Z')">Z</button></li>
+        <li><button id="X" onmousedown="pressedKey('X')">X</button></li>
+        <li><button id="C" onmousedown="pressedKey('C')">C</button></li>
+        <li><button id="V" onmousedown="pressedKey('V')">V</button></li>
+      </ul>
+
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/howler.min.js"></script>
+    <script>
+    var socket = io();
+    var soittajia = 0;
+    var pressed = {}; //tänne mapataan painetut näppäimet
+    var timeout;
+    var sound = new Howl({
+      urls: ['/stuff.ogg'],
+      rate: 1.0,
+      sprite: {
+        A: [0,1900], W: [2000, 1900], S: [4000, 1900], E: [6000, 1900], D: [8000, 1900], F: [10000, 1900], T: [12000, 1900], G: [14000, 1900],
+        Y: [16000, 1900], H: [18000, 1900], U: [20000, 1900], J: [22000, 1900], K: [24000, 1900],
+        1: [26000, 1900], 2: [28000, 1900], 3: [30000, 1900],
+        4: [32000, 1900], 5: [34000, 1900], 6: [36000, 1900],
+        7: [38000, 1900], V: [40000, 1900],
+        Z: [42000, 1900], X: [44000, 1900], C: [46000, 1900], 8: [48000, 1900]
+      }
+    });
+
+    function pressedKey(k){
+      socket.emit('painallus', k);
+    }
+
+    document.onkeyup = function toggle(k){
+      pressed[k.keyCode] = false; // merkitsee näppäimen vapaaksi
+    }
+
+    document.onkeydown = function hello(k){
+      var check = pressed[k.keyCode] || false;
+      //jos näppäin jo painettuna, ei tehdä mitään
+      if(!check){
+        var keynum = k.which;
+        key = String.fromCharCode(keynum);
+        socket.emit('painallus', key);
+        pressed[k.keyCode] = true;
+        return false;
+      }
+    }
+
+    socket.on('huone', function(nimi){
+      document.getElementById("room").innerHTML = "Huone: " + nimi;
+    });
+
+    socket.on('soittajia', function(maara){
+      document.getElementById("players").innerHTML = "Soittajia: " + maara;
+    });
+
+    socket.on('painallus', function(key){
+      sound.play(key);
+      var button = document.getElementById(key);
+      //var row = button.parentNode.parentNode.getAttribute('id');
+      button.style.backgroundColor = "orange";
+
+      //clearTimeout(timeout);
+      timeout = setTimeout(function(){
+          //button.style.backgroundColor = "black";
+          button.style.backgroundColor = "#E6E6E6";
+
+      }, 1000);
+
+    });
+    </script>
+  </body>
+</html>

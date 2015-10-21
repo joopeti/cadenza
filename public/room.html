@@ -1,113 +1,95 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <title>kakofonia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="stylesheet" href="/tyyli.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
   </head>
   <body>
-    <div id="roominfo">
-      <h1 id="room">Huone: </h1>
-      <h1 id="players">Soittajia: </h1>
+    <!-- Brand and toggle get grouped for better mobile display -->
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a id="room" class="navbar-brand" href="#">Brand</a>
     </div>
-    <div class="container">
-      <ul id="drums">
-        <li><button id="1" onmousedown="pressedKey('1')">1</button></li>
-        <li><button id="2" onmousedown="pressedKey('2')">2</button></li>
-        <li><button id="3" onmousedown="pressedKey('3')">3</button></li>
-        <li><button id="4" onmousedown="pressedKey('4')">4</button></li>
-        <li><button id="5" onmousedown="pressedKey('5')">5</button></li>
-        <li><button id="6" onmousedown="pressedKey('6')">6</button></li>
-        <li><button id="7" onmousedown="pressedKey('7')">7</button></li>
-        <li><button id="8" onmousedown="pressedKey('8')">8</button></li>
+    <!-- Navbar content -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+        <li><a href="#">Link</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">One more separated link</a></li>
+          </ul>
+        </li>
       </ul>
-      <ul id="black">
-        <li><button id="W" onmousedown="pressedKey('W')">W</button></li>
-        <li><button id="E" onmousedown="pressedKey('E')">E</button></li>
-        <li id="empty"></li>
-        <li><button id="T" onmousedown="pressedKey('T')">T</button></li>
-        <li><button id="Y" onmousedown="pressedKey('Y')">Y</button></li>
-        <li><button id="U" onmousedown="pressedKey('U')">U</button></li>
-      </ul>
-      <ul id="white">
-        <li><button id="A" onmousedown="pressedKey('A')">A</button></li>
-        <li><button id="S" onmousedown="pressedKey('S')">S</button></li>
-        <li><button id="D" onmousedown="pressedKey('D')">D</button></li>
-        <li><button id="F" onmousedown="pressedKey('F')">F</button></li>
-        <li><button id="G" onmousedown="pressedKey('G')">G</button></li>
-        <li><button id="H" onmousedown="pressedKey('H')">H</button></li>
-        <li><button id="J" onmousedown="pressedKey('J')">J</button></li>
-        <li><button id="K" onmousedown="pressedKey('K')">K</button></li>
-      </ul>
-      <ul id="drums">
-        <li><button id="Z" onmousedown="pressedKey('Z')">Z</button></li>
-        <li><button id="X" onmousedown="pressedKey('X')">X</button></li>
-        <li><button id="C" onmousedown="pressedKey('C')">C</button></li>
-        <li><button id="V" onmousedown="pressedKey('V')">V</button></li>
-      </ul>
-
     </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/howler.min.js"></script>
+  </div>
+  </nav>
+    <div class="container.fluid">
+      <div id="messageContainer">
+        <table id="messageBox" class="table table-hover table-condensed">
+            <tbody>
+            </tbody>
+        </table>
+      </div>
+      <div id="footer">
+        <div class="container.fluid">
+          <div id="messageFieldContainer" class="input-group">
+            <form id="teksti" action="">
+              <input type="text" id="messageField" class="form-control" placeholder="kirjoita jotain" autocomplete="off">
+              <button id="sendButton" class="btn btn-primary" type="submit">Lähetä</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
     var socket = io();
-    var soittajia = 0;
-    var pressed = {}; //tänne mapataan painetut näppäimet
-    var timeout;
-    var sound = new Howl({
-      urls: ['/stuff.ogg'],
-      rate: 1.0,
-      sprite: {
-        A: [0,1900], W: [2000, 1900], S: [4000, 1900], E: [6000, 1900], D: [8000, 1900], F: [10000, 1900], T: [12000, 1900], G: [14000, 1900],
-        Y: [16000, 1900], H: [18000, 1900], U: [20000, 1900], J: [22000, 1900], K: [24000, 1900],
-        1: [26000, 1900], 2: [28000, 1900], 3: [30000, 1900],
-        4: [32000, 1900], 5: [34000, 1900], 6: [36000, 1900],
-        7: [38000, 1900], V: [40000, 1900],
-        Z: [42000, 1900], X: [44000, 1900], C: [46000, 1900], 8: [48000, 1900]
-      }
+
+    $('#teksti').submit(function(){
+      if($.trim($('#messageField').val() ) != ''){ //if nonempty
+      socket.emit('sendMessage', $('#messageField').val()); //get message from field
+      $('#messageField').val('');          // empty message field
+    } else{
+      //some warning?
+    }
+      return false; // don't follow the link
     });
-
-    function pressedKey(k){
-      socket.emit('painallus', k);
-    }
-
-    document.onkeyup = function toggle(k){
-      pressed[k.keyCode] = false; // merkitsee näppäimen vapaaksi
-    }
-
-    document.onkeydown = function hello(k){
-      var check = pressed[k.keyCode] || false;
-      //jos näppäin jo painettuna, ei tehdä mitään
-      if(!check){
-        var keynum = k.which;
-        key = String.fromCharCode(keynum);
-        socket.emit('painallus', key);
-        pressed[k.keyCode] = true;
-        return false;
-      }
-    }
 
     socket.on('huone', function(nimi){
-      document.getElementById("room").innerHTML = "Huone: " + nimi;
+      document.getElementById("room").innerHTML = nimi;
     });
 
-    socket.on('soittajia', function(maara){
-      document.getElementById("players").innerHTML = "Soittajia: " + maara;
+    socket.on('osallistujia', function(maara){
+      //document.getElementById("osallistujia").innerHTML = "Keskustelijoita: " + maara;
     });
 
-    socket.on('painallus', function(key){
-      sound.play(key);
-      var button = document.getElementById(key);
-      //var row = button.parentNode.parentNode.getAttribute('id');
-      button.style.backgroundColor = "orange";
+    socket.on('newMessage', function(message){
+      $('#messageBox').append(
+      '<tr><td width="100%">&lt;' + message.sender + "&gt; " + message.contents + '</td></tr>');
 
-      //clearTimeout(timeout);
-      timeout = setTimeout(function(){
-          //button.style.backgroundColor = "black";
-          button.style.backgroundColor = "#E6E6E6";
-
-      }, 1000);
-
+      var jeps = $("#messageContainer");
+      jeps.animate({ scrollTop: jeps.prop("scrollHeight") - jeps.height() }, 500);
     });
+
+
     </script>
   </body>
 </html>
