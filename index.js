@@ -38,8 +38,13 @@ io.on('connection', function(socket){
 
   socket.on('sendMessage', function(msg){
     var date = new Date()
-    var message = new Message(msg.contents, msg.sender, date.toLocaleTimeString());
-    console.log(message.getContents());
+    //var message = new Message(msg.contents, msg.sender, date.toLocaleTimeString());
+    message = {
+      contents: msg,
+      sender: "anon",
+      timestamp: date.toLocaleTimeString()
+    }
+    console.log(message);
     io.emit('newMessage', message);
   });
 
