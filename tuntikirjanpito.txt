@@ -1,0 +1,14 @@
+pe 16.10, 6h
+	ensimm‰inen proto: node.js ja socket.js
+	-pystyy soittamaan reaaliajassa html5-‰‰ni‰ etusivulla
+
+la 17.10, 6h
+	-ulkoasu lis‰tty, pianonkoskettimisto ja reaaliaikainen visualisointi toisten soitosta.
+
+ma 19.10, 6h
+	-lis‰ttiin huoneet, eli vain samassa huoneessa olevat voivat kuulla toisensa. Huoneisiin voi liitty‰ osoiterivin kautta.
+ti 20.10, 6h
+	-lis‰t‰‰n keskustelumahdollisuus, huone-objekti
+	bootstrap alkua, jquery alkeita
+ke 21.10, 3h
+	-sivun hiomista mobiiliksi bootstrapilla
