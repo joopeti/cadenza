@@ -3,6 +3,8 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var url = require('url');
+var Channel = require('./channel.js');
+var Message = require('./message.js');
 
 var users = 0;
 var rooms = {};
@@ -16,33 +18,33 @@ app.get('/*', function(req, res){
 
 io.on('connection', function(socket){
   users++;
-  var id = checkUrl(socket.request.headers.referer);
-  if(id in rooms){
-    rooms[id] ++;
-  } else{
-    rooms[id] = 1;
-  }
+  //var id = checkUrl(socket.request.headers.referer); //get room id from Get
+  ch = new Channel("Uus kannu :D");
+  ch.addUser(socket.id);
+  ch.addMessage("Hello world!");
+  id = ch.getId();
+  rooms[id] = ch;
 
-  console.log("room: " + id + ", u: " + rooms[id]);
+  console.log("room: " + id + ", u: " + rooms[id].getNumberOfUsers());
 
 
   socket.join(id);
-  io.to(id).emit('soittajia', rooms[id]);
-  io.to(id).emit('huone', id);
-  console.log('users: ' + users);
+  io.emit('osallistujia', rooms[id]);
+  io.emit('huone', id);
 
-  socket.on('painallus', function(key){
-    io.to(id).emit('painallus', key);
-    //console.log("painettiin: " + key);
+  socket.on('haeViestit', function(id){
+    var i = rooms[id].getMessages(5);
+  });
+
+  socket.on('sendMessage', function(msg){
+    var date = new Date()
+    var message = new Message(msg.contents, msg.sender, date.toLocaleTimeString());
+    console.log(message.getContents());
+    io.emit('newMessage', message);
   });
 
   socket.on('disconnect', function(){
     users--;
-    rooms[id] --;
-    if(rooms[id] == 0 && id != "DEFAULT"){
-      delete rooms[id];
-      console.log("Poistettiin huone: " + id);
-    }
   });
 });
 

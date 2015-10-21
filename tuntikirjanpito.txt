@@ -10,5 +10,5 @@ ma 19.10, 6h
 ti 20.10, 6h
 	-lis‰t‰‰n keskustelumahdollisuus, huone-objekti
 	bootstrap alkua, jquery alkeita
-ke 21.10, 3h
+ke 21.10, 5h
 	-sivun hiomista mobiiliksi bootstrapilla
