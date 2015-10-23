@@ -4,6 +4,10 @@ function Message(contents, sender, timestamp){
   this.timestamp = timestamp;
 };
 
+Message.prototype.print = function(){
+  return this.timestamp + " " + this.sender + ": " + this.contents;
+}
+
 Message.prototype.getContents = function(){
   return this.contents;
 }

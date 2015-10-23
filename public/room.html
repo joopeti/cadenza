@@ -8,7 +8,8 @@
   </head>
   <body>
     <!-- Brand and toggle get grouped for better mobile display -->
-  <nav class="navbar navbar-inverse">
+  <div id="top"></div>
+  <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
@@ -49,6 +50,9 @@
       </div>
       <div id="footer">
         <div class="container.fluid">
+          <div id="infoContainer">
+            <p id ="infoMessage">no connection to server.</p>
+          </div>
           <div id="messageFieldContainer" class="input-group">
             <form id="teksti" action="">
               <input type="text" id="messageField" class="form-control" placeholder="kirjoita jotain" autocomplete="off">
@@ -62,6 +66,7 @@
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
     var socket = io();
+    var rowid = 0;
 
     $('#teksti').submit(function(){
       if($.trim($('#messageField').val() ) != ''){ //if nonempty
@@ -77,17 +82,38 @@
       document.getElementById("room").innerHTML = nimi;
     });
 
-    socket.on('osallistujia', function(maara){
-      //document.getElementById("osallistujia").innerHTML = "Keskustelijoita: " + maara;
+    socket.on('infoMessage', function(message){
+      $('#infoMessage').text(message.message);
+      //$('#infoTime').text(message.timestamp);
+    });
+
+    socket.on('messageHistory', function(history){
+      $('#messageBox tbody').remove();       // stupid hack
+      for (var i = 0; i < history.length; i++) {
+        appendMessage(history[i]);
+      }
+      scrollToBottom();
     });
 
     socket.on('newMessage', function(message){
-      $('#messageBox').append(
-      '<tr><td width="100%">&lt;' + message.sender + "&gt; " + message.contents + '</td></tr>');
-
-      var jeps = $("#messageContainer");
-      jeps.animate({ scrollTop: jeps.prop("scrollHeight") - jeps.height() }, 500);
+      appendMessage(message);
+      $('#infoMessage').text("last message: " + message.timestamp);
+      scrollToBottom();
     });
+
+    function appendMessage(message){
+
+      var row = $("<tr>");
+      row.append($("<td>").text(message.contents));
+      //row.append($("<strong>").text(message.sender));
+      $("#messageBox").append(row);
+    }
+
+    function scrollToBottom(){
+      //toggle off if user is scrolling?
+      var table = $("#messageContainer");
+      table.animate({ scrollTop: table.prop("scrollHeight") - table.height() }, 500);
+    }
 
 
     </script>

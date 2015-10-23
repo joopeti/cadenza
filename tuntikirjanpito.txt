@@ -12,3 +12,5 @@ ti 20.10, 6h
 	bootstrap alkua, jquery alkeita
 ke 21.10, 5h
 	-sivun hiomista mobiiliksi bootstrapilla
+pe 23.10, 3h
+	-viestihistorian tallennus ja lataus

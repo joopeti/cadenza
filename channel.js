@@ -1,9 +1,11 @@
-function Channel(name) {
-  this.id = "randomidhere";
+var Queue = require('./queue.js');
+
+function Channel(id, name, socket) {
+  this.id = id;
   this.name = name;
-  this.admin = "Admin";
+  this.admin = socket.id;
   this.nicks = [];
-  this.messages = [];
+  this.messages = new Queue();
   this.topMessages = [];
   this.secret = "SALAINEN LINKKI";
   this.users = 0;
@@ -32,13 +34,15 @@ Channel.prototype.getName = function(){
   return this.name;
 }
 
-Channel.prototype.addMessage = function(msg) {
-  this.messages.push(msg);
-  //remove first if over 100 msg
+Channel.prototype.addMessage = function(message) {
+  if(this.messages.len >= 50){
+    this.messages.pop();
+  }
+  this.messages.push(message);
 };
 
-Channel.prototype.getMessages = function(n) {
-  return this.messages;
+Channel.prototype.getMessages = function(howMany) {
+  return this.messages.asArray();
 }
 
 Channel.prototype.getSecretLink = function() {
