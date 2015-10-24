@@ -42,7 +42,7 @@ io.on('connection', function(socket){
 
   socket.on('changeNick', function(nick){
     nicks[socket.id] = nick;
-    console.log(socket.id + " changed nick to: " + nick);
+    //console.log(socket.id + " changed nick to: " + nick);
   });
 
   socket.on('disconnect', function(){
@@ -64,6 +64,7 @@ function newChannel(name, socket){
   ch = new Channel(id, name, socket);
   ch.addUser(socket.id);
   socket.join(name);
+  socket.emit('huone', name);
   socket.emit('infoMessage', serverMessage("created a new channel!"));
   return ch;
 }
