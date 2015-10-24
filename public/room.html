@@ -7,39 +7,15 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
   </head>
   <body>
-    <!-- Brand and toggle get grouped for better mobile display -->
   <div id="top"></div>
-  <nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container-fluid">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a id="room" class="navbar-brand" href="#">Brand</a>
+  <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  	<div class="navbar-header pull-left">
+      <a id="room" class="navbar-brand" href="#">Title Here</a>
     </div>
-    <!-- Navbar content -->
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
-        <li><a href="#">Link</a></li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="#">Action</a></li>
-            <li><a href="#">Another action</a></li>
-            <li><a href="#">Something else here</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="#">Separated link</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="#">One more separated link</a></li>
-          </ul>
-        </li>
-      </ul>
+    <div class="nav navbar-header pull-right">
+      <li id="rightButton"><button id="ylaButton" class="btn btn-link" onclick="buttonToForm();">Vaihda tunnus</button></li>
     </div>
-  </div>
+    </div>
   </nav>
     <div class="container.fluid">
       <div id="messageContainer">
@@ -64,12 +40,15 @@
     </div>
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="/bootstrap.min.js"></script>
     <script>
     var socket = io();
     var rowid = 0;
+    var oldNick = "anon";
+    var btn;
 
     $('#teksti').submit(function(){
-      if($.trim($('#messageField').val() ) != ''){ //if nonempty
+      if(validInput($('#messageField').val())){
       socket.emit('sendMessage', $('#messageField').val()); //get message from field
       $('#messageField').val('');          // empty message field
     } else{
@@ -101,12 +80,61 @@
       scrollToBottom();
     });
 
-    function appendMessage(message){
+    function changeNick(){
+      var newNick = $('#rightForm').val();
+      if(validInput(newNick)){
+        $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-link" onclick="buttonToForm();"></button></li>');
+        $('#ylaButton').text(newNick);
+        //$('#rightButton a').text(newNick);
+        socket.emit('changeNick', newNick);
+        oldNick = newNick;
+      } else{
+        $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-link" onclick="buttonToForm();"></button></li>');
+        $('#ylaButton').text(oldNick);
+      }
+      return false;
+    }
 
+    function buttonToForm(){
+        btn = $('#rightButton');
+        var form = $('<form>', {
+          'id': 'nick',
+          'action': "",
+          'onsubmit': 'changeNick()'
+        });
+        var input = $('<input />', {
+          'type': 'text',
+          'id': 'rightForm',
+          'style': 'margin-right: 10px; margin-top: 9px; width: 250px; ',
+          'class': 'form-control',
+          'placeholder': 'kirjoita uusi tunnus',
+          'onblur': 'changeNick()'
+        });
+        form.append(input);
+        $('#rightButton').replaceWith(form);
+        $('#rightForm').focus();
+    }
+
+    function validInput(string){
+      if($.trim(string) != ''){                             //if nonempty
+        return true;
+      }
+      return false;                                        // empty message field
+    }
+
+    function appendMessage(message){
+      //laatu: kello kaksi aamuyöllä
       var row = $("<tr>");
-      row.append($("<td>").text(message.contents));
-      //row.append($("<strong>").text(message.sender));
+      var cell = $("<td>");
+      var text = $("<span>");
+      var bold = $("<strong>").attr("id", rowid);
+      $(bold).text("<" + message.sender + "> ");
+      $(text).text(message.contents);
+      row.append(cell.append(bold).append(text));
+
       $("#messageBox").append(row);
+
+      rowid++;
     }
 
     function scrollToBottom(){

@@ -10,6 +10,7 @@ var Queue = require('./queue.js');
 
 var users = 0;
 var rooms = {};
+var nicks = {};
 
 app.use(express.static(__dirname + '/sounds'));
 app.use(express.static(__dirname + '/public'));
@@ -32,10 +33,16 @@ io.on('connection', function(socket){
   });
 
   socket.on('sendMessage', function(msg){
+    var nick = nicks[socket.id] || "anon";
     var date = new Date();
-    var message = new Message(msg, socket.id, date.toLocaleTimeString());
+    var message = new Message(msg, nick, date.toLocaleTimeString());
     rooms[id].addMessage(message);
     io.to(id).emit('newMessage', message);
+  });
+
+  socket.on('changeNick', function(nick){
+    nicks[socket.id] = nick;
+    console.log(socket.id + " changed nick to: " + nick);
   });
 
   socket.on('disconnect', function(){
