@@ -47,7 +47,7 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(){
     socket.emit('infoMessage', serverMessage('connection lost'));
-    io.to(id).emit('infoMessage', serverMessage('user disconnected'));
+    //io.to(id).emit('infoMessage', serverMessage('user disconnected'));
     users--;
   });
 });
