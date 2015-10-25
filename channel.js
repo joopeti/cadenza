@@ -21,13 +21,13 @@ Channel.prototype.getNumberOfUsers = function(){
 }
 
 Channel.prototype.addUser = function(nick){
-  this.nicks.push(nick);
+  //this.nicks.push(nick);
   this.users++;
 }
 
 Channel.prototype.removeUser = function(nick){
-  this.nicks.remove(nick);
-  this.users++;
+  //this.nicks.delete(nick);
+  this.users--;
 }
 
 Channel.prototype.getName = function(){

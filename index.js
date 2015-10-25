@@ -20,6 +20,20 @@ app.get('/*', function(req, res){
 });
 
 io.on('connection', function(socket){
+  var user = socket.id;
+  console.log(socket.request._query['id']);
+  data = socket.request._query['id'];
+
+  if(data !== null){
+    user = data;
+    if(nicks[user]){
+      socket.emit('userStatus', nicks[user]);
+    }
+  } else{
+    socket.emit('newUser', socket.id);
+  }
+
+
   users++;
   var id = checkUrl(socket.request.headers.referer); //get room id from Get
   if(rooms[id]){
@@ -27,13 +41,15 @@ io.on('connection', function(socket){
   } else{
     rooms[id] = newChannel(id, socket);
   }
+  rooms[id].addUser(user);
+  io.to(id).emit('roomStatus', roomUpdate(id));
 
   socket.on('haeViestit', function(id){
     var i = rooms[id].getMessages(5);
   });
 
   socket.on('sendMessage', function(msg){
-    var nick = nicks[socket.id] || "anon";
+    var nick = nicks[user] || "anon";
     var date = new Date();
     var message = new Message(msg, nick, date.toLocaleTimeString());
     rooms[id].addMessage(message);
@@ -41,16 +57,26 @@ io.on('connection', function(socket){
   });
 
   socket.on('changeNick', function(nick){
-    nicks[socket.id] = nick;
+    nicks[user] = nick;
     //console.log(socket.id + " changed nick to: " + nick);
   });
 
   socket.on('disconnect', function(){
+    rooms[id].removeUser(user);
     socket.emit('infoMessage', serverMessage('connection lost'));
+    io.to(id).emit('roomStatus', roomUpdate(id));
     //io.to(id).emit('infoMessage', serverMessage('user disconnected'));
     users--;
   });
 });
+
+function roomUpdate(roomid, userid){
+  var room = rooms[roomid];
+  return {
+    'name': roomid,
+    'users': room.getNumberOfUsers(),
+  }
+}
 
 function serverMessage(content){
   return {
@@ -62,16 +88,15 @@ function serverMessage(content){
 function newChannel(name, socket){
   var id = uuid.v4();
   ch = new Channel(id, name, socket);
-  ch.addUser(socket.id);
   socket.join(name);
-  socket.emit('huone', name);
+  socket.emit('roomStatus', name);
   socket.emit('infoMessage', serverMessage("created a new channel!"));
   return ch;
 }
 
 function joinChannel(name, socket){
   socket.join(name);
-  socket.emit('huone', name);
+  socket.emit('roomStatus', name);
   socket.emit('infoMessage', serverMessage("connection established"));
   socket.emit('messageHistory', rooms[name].getMessages(50));
 }
@@ -79,13 +104,12 @@ function joinChannel(name, socket){
 function checkUrl(address){
   var path = url.parse(address).pathname.split('/');
   //väärän kokoinen osoite
-  if(path.length != 3){
-    return "DEFAULT";
-  }
   //palautetaan huoneen id
-  if(path[1] == "room"){
+  if(path.length == 3 && path[1] == "room" && path[2].length < 32){
     return path[2];
   }
+
+  return "LostAndFound";
 }
 
 http.listen(3000, function(){

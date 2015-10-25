@@ -14,3 +14,6 @@ ke 21.10, 5h
 	-sivun hiomista mobiiliksi bootstrapilla
 pe 23.10, 3h
 	-viestihistorian tallennus ja lataus
+la 24.10, 3h
+	-nimimerkin luonti ja päivitys
+TODO: kanavan nimien tarkistaminen ja niiden poistaminen tyhjinä

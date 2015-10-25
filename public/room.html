@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <title>kakofonia</title>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="stylesheet" href="/tyyli.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
@@ -10,16 +11,16 @@
   <div id="top"></div>
   <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
   	<div class="navbar-header pull-left">
-      <a id="room" class="navbar-brand" href="#">Title Here</a>
+      <a id="room" class="navbar-brand truncate" href="#">Title Here</a>
     </div>
     <div class="nav navbar-header pull-right">
-      <li id="rightButton"><button id="ylaButton" class="btn btn-link" onclick="buttonToForm();">Vaihda tunnus</button></li>
+      <li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn" onclick="buttonToForm();">Vaihda tunnus</button></li>
     </div>
     </div>
   </nav>
     <div class="container.fluid">
       <div id="messageContainer">
-        <table id="messageBox" class="table table-hover table-condensed">
+        <table id="messageBox" class="table table-hover table-condensed striped">
             <tbody>
             </tbody>
         </table>
@@ -42,23 +43,23 @@
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script src="/bootstrap.min.js"></script>
     <script>
-    var socket = io();
+    var id = localStorage.getItem('userid');
+    var socket = io('http://192.168.0.125', {query: "id=" + id});
     var rowid = 0;
     var oldNick = "anon";
     var btn;
 
-    $('#teksti').submit(function(){
-      if(validInput($('#messageField').val())){
-      socket.emit('sendMessage', $('#messageField').val()); //get message from field
-      $('#messageField').val('');          // empty message field
-    } else{
-      //some warning?
-    }
-      return false; // don't follow the link
+    socket.on('newUser', function(data){
+      localStorage.setItem('userid', data);
     });
 
-    socket.on('huone', function(nimi){
-      document.getElementById("room").innerHTML = nimi;
+    socket.on('userStatus', function(userdata){
+      $("#ylaButton").text(userdata);
+    });
+
+    socket.on('roomStatus', function(room){
+      $("#room").text("#"+ room.name + "(" + room.users + ")");
+      $("title").text("#"+ room.name);
     });
 
     socket.on('infoMessage', function(message){
@@ -80,16 +81,25 @@
       scrollToBottom();
     });
 
+    $('#teksti').submit(function(){
+      if(validInput($('#messageField').val())){
+      socket.emit('sendMessage', $('#messageField').val()); //get message from field
+      $('#messageField').val('');          // empty message field
+    } else{
+      //some warning?
+    }
+      return false; // don't follow the link
+    });
+
     function changeNick(){
       var newNick = $('#rightForm').val();
+      $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn" onclick="buttonToForm();"></button></li>');
       if(validInput(newNick)){
-        $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-link" onclick="buttonToForm();"></button></li>');
         $('#ylaButton').text(newNick);
         //$('#rightButton a').text(newNick);
         socket.emit('changeNick', newNick);
         oldNick = newNick;
       } else{
-        $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-link" onclick="buttonToForm();"></button></li>');
         $('#ylaButton').text(oldNick);
       }
       return false;
@@ -99,7 +109,7 @@
         btn = $('#rightButton');
         var form = $('<form>', {
           'id': 'nick',
-          'action': "",
+          'action': "javascript:void(0);",
           'onsubmit': 'changeNick()'
         });
         var input = $('<input />', {
@@ -124,23 +134,27 @@
 
     function appendMessage(message){
       //laatu: kello kaksi aamuyöllä
+      var hm = message.timestamp.split(':');
+      hm = hm[0] + ":" + hm[1] + " ";
       var row = $("<tr>");
       var cell = $("<td>");
       var text = $("<span>");
-      var bold = $("<strong>").attr("id", rowid);
+      var time = $("<span>", {
+        'id': 'timestamp'
+      });
+      var bold = $("<strong>");
       $(bold).text("<" + message.sender + "> ");
       $(text).text(message.contents);
-      row.append(cell.append(bold).append(text));
+      //$(time).text(hm);
+      row.append(cell.append(time).append(bold).append(text));
 
       $("#messageBox").append(row);
-
-      rowid++;
     }
 
     function scrollToBottom(){
       //toggle off if user is scrolling?
       var table = $("#messageContainer");
-      table.animate({ scrollTop: table.prop("scrollHeight") - table.height() }, 500);
+      table.animate({ scrollTop: table.prop("scrollHeight") - table.height()},  200);
     }
 
 
