@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>kakofonia</title>
+    <title>kivachätti</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="stylesheet" href="/tyyli.css">
@@ -54,12 +54,13 @@
     });
 
     socket.on('userStatus', function(userdata){
+      oldNick = userdata;
       $("#ylaButton").text(userdata);
     });
 
     socket.on('roomStatus', function(room){
       $("#room").text("#"+ room.name + "(" + room.users + ")");
-      $("title").text("#"+ room.name);
+      $("title").text(oldNick + "@"+ room.name);
     });
 
     socket.on('infoMessage', function(message){
@@ -145,7 +146,7 @@
       var bold = $("<strong>");
       $(bold).text("<" + message.sender + "> ");
       $(text).text(message.contents);
-      //$(time).text(hm);
+      $(time).text(hm);
       row.append(cell.append(time).append(bold).append(text));
 
       $("#messageBox").append(row);

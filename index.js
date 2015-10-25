@@ -58,6 +58,7 @@ io.on('connection', function(socket){
 
   socket.on('changeNick', function(nick){
     nicks[user] = nick;
+    io.to(id).emit('roomStatus', roomUpdate(id));
     //console.log(socket.id + " changed nick to: " + nick);
   });
 
