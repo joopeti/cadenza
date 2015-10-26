@@ -24,7 +24,7 @@ io.on('connection', function(socket){
   console.log(socket.request._query['id']);
   data = socket.request._query['id'];
 
-  if(data != null){
+  if(data != null && data != "null"){
     user = data;
     if(user in nicks){
       socket.emit('userStatus', nicks[user]);
