@@ -24,15 +24,14 @@ io.on('connection', function(socket){
   console.log(socket.request._query['id']);
   data = socket.request._query['id'];
 
-  if(data !== null){
+  if(data != null){
     user = data;
-    if(nicks[user]){
+    if(user in nicks){
       socket.emit('userStatus', nicks[user]);
     }
   } else{
     socket.emit('newUser', socket.id);
   }
-
 
   users++;
   var id = checkUrl(socket.request.headers.referer); //get room id from Get
