@@ -11,6 +11,8 @@ var Queue = require('./queue.js');
 var users = 0;
 var rooms = {};
 var nicks = {};
+var iplog = {};
+var lastMessage = {};
 
 app.use(express.static(__dirname + '/sounds'));
 app.use(express.static(__dirname + '/public'));
@@ -20,8 +22,8 @@ app.get('/*', function(req, res){
 });
 
 io.on('connection', function(socket){
+  logIP(socket);
   var user = socket.id;
-  console.log(socket.request._query['id']);
   data = socket.request._query['id'];
 
   if(data != null && data != "null"){
@@ -48,16 +50,26 @@ io.on('connection', function(socket){
   });
 
   socket.on('sendMessage', function(msg){
-    var nick = nicks[user] || "anon";
-    var date = new Date();
-    var message = new Message(msg, nick, date.toLocaleTimeString());
-    rooms[id].addMessage(message);
-    io.to(id).emit('newMessage', message);
+    if(!isSpam(socket) && validInput(msg, 1000)){
+      var nick = nicks[user] || "anon";
+      var date = new Date();
+      var message = new Message(msg, nick, date.toLocaleTimeString());
+      rooms[id].addMessage(message);
+      io.to(id).emit('newMessage', message);
+    } else {
+      logIP(socket);
+  }
   });
 
   socket.on('changeNick', function(nick){
-    nicks[user] = nick;
-    io.to(id).emit('roomStatus', roomUpdate(id));
+    if(!isSpam(socket) && validInput(nick, 32)){
+      nicks[user] = nick;
+      socket.emit('roomStatus', roomUpdate(id));
+    } else{
+      io.to(id).emit('infoMessage', serverMessage('Joku täällä HäXÄÄ :DD'));
+      logIP(socket);
+    }
+
     //console.log(socket.id + " changed nick to: " + nick);
   });
 
@@ -78,11 +90,38 @@ function roomUpdate(roomid, userid){
   }
 }
 
+function validInput(string, maxlen){
+  if(string.trim() != '' && string.length < maxlen){
+    return true;
+  }
+  return false;
+}
+
+function isSpam(socket){
+  var now = Date.now();
+  var spam = false;
+  if(now - lastMessage[socket.id] < 300){
+    spam = true;
+  }
+  lastMessage[socket.id] = now;
+  return spam;
+}
+
 function serverMessage(content){
   return {
     message: content,
     timestamp: new Date().toLocaleTimeString()
   }
+}
+
+function logIP(socket){
+  var ip = socket.request.socket.remoteAddress;
+  if(ip in iplog){
+    iplog[ip]++;
+  } else{
+    iplog[ip] = 1;
+  }
+  console.log(iplog);
 }
 
 function newChannel(name, socket){

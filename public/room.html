@@ -14,7 +14,7 @@
       <a id="room" class="navbar-brand truncate" href="#">Title Here</a>
     </div>
     <div class="nav navbar-header pull-right">
-      <li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn" onclick="buttonToForm();">Vaihda tunnus</button></li>
+      <li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn truncate" onclick="buttonToForm();">Vaihda tunnus</button></li>
     </div>
     </div>
   </nav>
@@ -83,7 +83,7 @@
     });
 
     $('#teksti').submit(function(){
-      if(validInput($('#messageField').val())){
+      if(validInput($('#messageField').val(), 1000)){
       socket.emit('sendMessage', $('#messageField').val()); //get message from field
       $('#messageField').val('');          // empty message field
     } else{
@@ -94,8 +94,8 @@
 
     function changeNick(){
       var newNick = $('#rightForm').val();
-      $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn" onclick="buttonToForm();"></button></li>');
-      if(validInput(newNick)){
+      $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn truncate" onclick="buttonToForm();"></button></li>');
+      if(validInput(newNick, 32)){
         $('#ylaButton').text(newNick);
         //$('#rightButton a').text(newNick);
         socket.emit('changeNick', newNick);
@@ -126,8 +126,8 @@
         $('#rightForm').focus();
     }
 
-    function validInput(string){
-      if($.trim(string) != ''){                             //if nonempty
+    function validInput(string, len){
+      if($.trim(string) != '' && string.length < len){      //if nonempty
         return true;
       }
       return false;                                        // empty message field
