@@ -11,7 +11,6 @@ var Queue = require('./queue.js');
 
 var users = 0;
 var rooms = {};
-var nicks = {};
 var iplog = {};
 var lastMessage = {};
 var client = redis.createClient("6379", "192.168.0.182");
@@ -26,37 +25,50 @@ app.get('/*', function(req, res){
 io.on('connection', function(socket){
   logIP(socket);
   var user = checkUser(socket);
-
   users++;
+
   var id = checkUrl(socket.request.headers.referer); //get room id from Get
-  if(rooms[id]){
-    joinChannel(id, socket);
-  } else{
-    rooms[id] = newChannel(id, socket);
-  }
-  rooms[id].addUser(user);
-  io.to(id).emit('roomStatus', roomUpdate(id));
+  client.hgetall("room_" + id, function(err, reply){
+    console.log(reply);
+    if(reply){
+      joinChannel(id, socket);
+    }else{
+      newChannel(id, socket, user);
+    }
+    if(rooms[id]){
+      rooms[id] = rooms[id] + 1;
+    } else{
+      rooms[id] = 1;
+    }
+    io.to(id).emit('roomStatus', roomUpdate(id));
+  });
 
   socket.on('haeViestit', function(id){
     var i = rooms[id].getMessages(5);
   });
 
   socket.on('sendMessage', function(msg){
-    if(!isSpam(socket) && validInput(msg, 1000)){
-      var nick = nicks[user] || "anon";
-      var date = new Date();
-      var message = new Message(msg, nick, date.toLocaleTimeString());
-      rooms[id].addMessage(message);
-      io.to(id).emit('newMessage', message);
+    if(!spam(socket) && validInput(msg, 1000)){
+      //get user nick from redis-database
+      client.get(user, function(err, nick){
+        var sender = "anon";
+        if(nick){
+          sender = nick;
+        }
+        var date = new Date();
+        var message = new Message(msg, sender, date.toLocaleTimeString());
+        io.to(id).emit('newMessage', message);
+        saveMessage(message, id);
+      });
     } else {
       logIP(socket);
       socket.emit('infoMessage', serverMessage('SPAM DETECTED, IP LOGGED, NETVINKED', 'error'));
-  }
+    }
   });
 
   socket.on('changeNick', function(nick){
-    if(!isSpam(socket) && validInput(nick, 32)){
-      nicks[user] = nick;
+    if(!spam(socket) && validInput(nick, 32)){
+      client.set(user, nick);
       socket.emit('roomStatus', roomUpdate(id));
     } else{
       io.to(id).emit('infoMessage', serverMessage('Häxös muchos, paha paha', 'error'));
@@ -67,7 +79,7 @@ io.on('connection', function(socket){
   });
 
   socket.on('disconnect', function(){
-    rooms[id].removeUser(user);
+    rooms[id] = rooms[id] - 1;
     socket.emit('infoMessage', serverMessage('connection lost', 'normal'));
     io.to(id).emit('roomStatus', roomUpdate(id));
     //io.to(id).emit('infoMessage', serverMessage('user disconnected'));
@@ -78,9 +90,11 @@ io.on('connection', function(socket){
 function checkUser(socket){
   data = socket.request._query['id'];
   if(data != null && data != "null"){
-    if(data in nicks){
-      socket.emit('userStatus', nicks[data]);
-    }
+    client.get(data, function(err, nick){
+      if(nick){
+        socket.emit('userStatus', nick);
+      }
+    });
     return data;
   } else{
     socket.emit('newUser', socket.id);
@@ -88,11 +102,11 @@ function checkUser(socket){
   }
 }
 
-function roomUpdate(roomid, userid){
-  var room = rooms[roomid];
+function roomUpdate(roomid){
+  var users = rooms[roomid];
   return {
     'name': roomid,
-    'users': room.getNumberOfUsers(),
+    'users': users
   }
 }
 
@@ -103,7 +117,7 @@ function validInput(string, maxlen){
   return false;
 }
 
-function isSpam(socket){
+function spam(socket){
   var now = Date.now();
   var spam = false;
   if(now - lastMessage[socket.id] < 300){
@@ -128,15 +142,16 @@ function logIP(socket){
   } else{
     iplog[ip] = 1;
   }
-  console.log("connection: " + ip);
+  //console.log("connection: " + ip);
 }
 
-function newChannel(name, socket){
+function newChannel(name, socket, user){
   var id = uuid.v4();
-  ch = new Channel(id, name, socket);
+  ch = new Channel(id, name, user);
   socket.join(name);
   socket.emit('roomStatus', name);
   socket.emit('infoMessage', serverMessage("created a new channel!"));
+  client.hmset('room_' + name, ch);
   return ch;
 }
 
@@ -144,7 +159,27 @@ function joinChannel(name, socket){
   socket.join(name);
   socket.emit('roomStatus', name);
   socket.emit('infoMessage', serverMessage("connection established"));
-  socket.emit('messageHistory', rooms[name].getMessages(50));
+  client.hgetall('room_' + name, function(err, reply){
+    if(reply){
+      client.lrange(reply.id, 0, -1, function(err, msg){
+        console.log(msg);
+        socket.emit('messageHistory', msg);
+      });
+    }
+  });
+
+}
+
+function saveMessage(msg, name){
+  client.hgetall("room_" + name, function(err, reply){
+    client.llen(reply.id, function(err2, length){
+      if(length > 50){
+        client.lpop(reply.id, function(err3, old){});
+      }
+      client.rpush([reply.id, JSON.stringify(msg)]);
+    });
+
+  });
 }
 
 function checkUrl(address){

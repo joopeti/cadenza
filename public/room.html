@@ -69,11 +69,11 @@
       //$('#infoTime').text(message.timestamp);
     });
 
-    socket.on('messageHistory', function(history){
+    socket.on('messageHistory', function(msg_hist){
       $('#messageBox tbody').remove();
-      for (var i = 0; i < history.length; i++) {
-        appendMessage(history[i]);
-      }
+      msg_hist.forEach(function(message){
+        appendMessage(message, true);
+      });
       scrollToBottom();
     });
 
@@ -135,8 +135,11 @@
       return false;                                        // empty message field
     }
 
-    function appendMessage(message){
+    function appendMessage(message, json){
       //laatu: kello kaksi aamuyöllä
+      if(json){
+        message = JSON.parse(message);
+      }
       var hm = message.timestamp.split(':');
       hm = hm[0] + ":" + hm[1] + " ";
       var row = $("<tr>");

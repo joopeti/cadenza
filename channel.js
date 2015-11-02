@@ -1,12 +1,9 @@
 var Queue = require('./queue.js');
 
-function Channel(id, name, socket) {
+function Channel(id, name, user) {
   this.id = id;
   this.name = name;
-  this.admin = socket.id;
-  this.nicks = [];
-  this.messages = new Queue();
-  this.topMessages = [];
+  this.admin = user;
   this.secret = "SALAINEN LINKKI";
   this.users = 0;
   this.spamLimit = 10;   //time limit of concurrent posts in seconds
@@ -32,17 +29,6 @@ Channel.prototype.removeUser = function(nick){
 
 Channel.prototype.getName = function(){
   return this.name;
-}
-
-Channel.prototype.addMessage = function(message) {
-  if(this.messages.len >= 50){
-    this.messages.pop();
-  }
-  this.messages.push(message);
-};
-
-Channel.prototype.getMessages = function(howMany) {
-  return this.messages.asArray();
 }
 
 Channel.prototype.getSecretLink = function() {
