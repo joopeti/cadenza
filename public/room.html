@@ -14,7 +14,7 @@
       <a id="room" class="navbar-brand truncate" href="#">Title Here</a>
     </div>
     <div class="nav navbar-header pull-right">
-      <li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn truncate" onclick="buttonToForm();">Vaihda tunnus</button></li>
+      <li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn" onclick="buttonToForm();">Vaihda tunnus</button></li>
     </div>
     </div>
   </nav>
@@ -65,11 +65,12 @@
 
     socket.on('infoMessage', function(message){
       $('#infoMessage').text(message.message);
+      $('#infoMessage').removeClass().addClass(message.type);
       //$('#infoTime').text(message.timestamp);
     });
 
     socket.on('messageHistory', function(history){
-      $('#messageBox tbody').remove();       // stupid hack
+      $('#messageBox tbody').remove();
       for (var i = 0; i < history.length; i++) {
         appendMessage(history[i]);
       }
@@ -79,6 +80,7 @@
     socket.on('newMessage', function(message){
       appendMessage(message);
       $('#infoMessage').text("last message: " + message.timestamp);
+      $('#infoMessage').removeClass().addClass("normal");
       scrollToBottom();
     });
 
@@ -94,7 +96,7 @@
 
     function changeNick(){
       var newNick = $('#rightForm').val();
-      $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn truncate" onclick="buttonToForm();"></button></li>');
+      $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn" onclick="buttonToForm();"></button></li>');
       if(validInput(newNick, 32)){
         $('#ylaButton').text(newNick);
         //$('#rightButton a').text(newNick);

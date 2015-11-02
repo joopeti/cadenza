@@ -4,6 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var url = require('url');
 var uuid = require('node-uuid');
+var redis = require('redis');
 var Channel = require('./channel.js');
 var Message = require('./message.js');
 var Queue = require('./queue.js');
@@ -13,6 +14,7 @@ var rooms = {};
 var nicks = {};
 var iplog = {};
 var lastMessage = {};
+var client = redis.createClient("6379", "192.168.0.182");
 
 app.use(express.static(__dirname + '/sounds'));
 app.use(express.static(__dirname + '/public'));
@@ -23,17 +25,7 @@ app.get('/*', function(req, res){
 
 io.on('connection', function(socket){
   logIP(socket);
-  var user = socket.id;
-  data = socket.request._query['id'];
-
-  if(data != null && data != "null"){
-    user = data;
-    if(user in nicks){
-      socket.emit('userStatus', nicks[user]);
-    }
-  } else{
-    socket.emit('newUser', socket.id);
-  }
+  var user = checkUser(socket);
 
   users++;
   var id = checkUrl(socket.request.headers.referer); //get room id from Get
@@ -58,6 +50,7 @@ io.on('connection', function(socket){
       io.to(id).emit('newMessage', message);
     } else {
       logIP(socket);
+      socket.emit('infoMessage', serverMessage('SPAM DETECTED, IP LOGGED, NETVINKED', 'error'));
   }
   });
 
@@ -66,7 +59,7 @@ io.on('connection', function(socket){
       nicks[user] = nick;
       socket.emit('roomStatus', roomUpdate(id));
     } else{
-      io.to(id).emit('infoMessage', serverMessage('Joku täällä HäXÄÄ :DD'));
+      io.to(id).emit('infoMessage', serverMessage('Häxös muchos, paha paha', 'error'));
       logIP(socket);
     }
 
@@ -75,12 +68,25 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(){
     rooms[id].removeUser(user);
-    socket.emit('infoMessage', serverMessage('connection lost'));
+    socket.emit('infoMessage', serverMessage('connection lost', 'normal'));
     io.to(id).emit('roomStatus', roomUpdate(id));
     //io.to(id).emit('infoMessage', serverMessage('user disconnected'));
     users--;
   });
 });
+
+function checkUser(socket){
+  data = socket.request._query['id'];
+  if(data != null && data != "null"){
+    if(data in nicks){
+      socket.emit('userStatus', nicks[data]);
+    }
+    return data;
+  } else{
+    socket.emit('newUser', socket.id);
+    return socket.id;
+  }
+}
 
 function roomUpdate(roomid, userid){
   var room = rooms[roomid];
@@ -107,10 +113,11 @@ function isSpam(socket){
   return spam;
 }
 
-function serverMessage(content){
+function serverMessage(content, type){
   return {
     message: content,
-    timestamp: new Date().toLocaleTimeString()
+    timestamp: new Date().toLocaleTimeString(),
+    type: type
   }
 }
 
@@ -121,7 +128,7 @@ function logIP(socket){
   } else{
     iplog[ip] = 1;
   }
-  console.log(iplog);
+  console.log("connection: " + ip);
 }
 
 function newChannel(name, socket){
