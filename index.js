@@ -11,6 +11,7 @@ var Queue = require('./queue.js');
 
 var users = 0;
 var rooms = {};
+var messages = 0;
 var iplog = {};
 var lastMessage = {};
 var client = redis.createClient("6379", "192.168.0.182");
@@ -18,28 +19,25 @@ var client = redis.createClient("6379", "192.168.0.182");
 app.use(express.static(__dirname + '/sounds'));
 app.use(express.static(__dirname + '/public'));
 
-app.get('/*', function(req, res){
+app.get('/room/*', function(req, res){
   res.sendFile(__dirname + '/public/room.html');
 });
 
 io.on('connection', function(socket){
+  //socket.emit('mainInfo', {'msg': messages, 'users': users, 'rooms': Object.keys(rooms).length});
   logIP(socket);
   var user = checkUser(socket);
   users++;
 
   var id = checkUrl(socket.request.headers.referer); //get room id from Get
   client.hgetall("room_" + id, function(err, reply){
-    console.log(reply);
-    if(reply){
+    if (reply) {
       joinChannel(id, socket);
-    }else{
+    } else {
       newChannel(id, socket, user);
     }
-    if(rooms[id]){
-      rooms[id] = rooms[id] + 1;
-    } else{
-      rooms[id] = 1;
-    }
+    socket.join(id);
+    roomUserAppend(id);
     io.to(id).emit('roomStatus', roomUpdate(id));
   });
 
@@ -58,6 +56,8 @@ io.on('connection', function(socket){
         var date = new Date();
         var message = new Message(msg, sender, date.toLocaleTimeString());
         io.to(id).emit('newMessage', message);
+        client.incr('messages_send');
+        messages++;
         saveMessage(message, id);
       });
     } else {
@@ -142,27 +142,30 @@ function logIP(socket){
   } else{
     iplog[ip] = 1;
   }
-  //console.log("connection: " + ip);
+  console.log("connection: " + ip);
 }
 
-function newChannel(name, socket, user){
+function newChannel(name, socket, user, listed){
   var id = uuid.v4();
-  ch = new Channel(id, name, user);
-  socket.join(name);
-  socket.emit('roomStatus', name);
+  ch = new Channel(id, name, user, listed);
   socket.emit('infoMessage', serverMessage("created a new channel!"));
   client.hmset('room_' + name, ch);
   return ch;
 }
 
+function roomUserAppend(id){
+  if(rooms[id]){
+    rooms[id] = rooms[id] + 1;
+  } else{
+    rooms[id] = 1;
+  }
+}
+
 function joinChannel(name, socket){
-  socket.join(name);
-  socket.emit('roomStatus', name);
   socket.emit('infoMessage', serverMessage("connection established"));
   client.hgetall('room_' + name, function(err, reply){
     if(reply){
       client.lrange(reply.id, 0, -1, function(err, msg){
-        console.log(msg);
         socket.emit('messageHistory', msg);
       });
     }
@@ -191,6 +194,14 @@ function checkUrl(address){
   }
 
   return "LostAndFound";
+}
+
+function getSecret(address){
+  var path = url.parse(address).pathname.split('/');
+  if(path.length == 3 && path[1] == "secret"){
+    return path[2];
+  }
+  return null;
 }
 
 http.listen(3000, function(){

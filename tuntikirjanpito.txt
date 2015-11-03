@@ -16,4 +16,7 @@ pe 23.10, 3h
 	-viestihistorian tallennus ja lataus
 la 24.10, 3h
 	-nimimerkin luonti ja päivitys
-TODO: kanavan nimien tarkistaminen ja niiden poistaminen tyhjinä
+pe 6.10, 3h
+	-spämmifiltteri, syötteiden tarkistus serverillä
+ma 2.11, 3h
+	-redis tietokannan käyttöönottoa
