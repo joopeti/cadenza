@@ -14,7 +14,7 @@ var rooms = {};
 var messages = 0;
 var iplog = {};
 var lastMessage = {};
-var client = redis.createClient("6379", "192.168.0.182");
+var client = redis.createClient();
 
 app.use(express.static(__dirname + '/sounds'));
 app.use(express.static(__dirname + '/public'));
