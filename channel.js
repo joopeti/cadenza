@@ -1,10 +1,10 @@
 var Queue = require('./queue.js');
 
-function Channel(id, name, user, listed) {
+function Channel(id, name, user) {
   this.id = id;
   this.name = name;
   this.admin = user;
-  this.listed = listed;
+  this.isPrivate = false;
   this.secret = "SALAINEN LINKKI";
   this.users = 0;
   this.spamLimit = 10;   //time limit of concurrent posts in seconds

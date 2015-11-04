@@ -13,8 +13,29 @@
   	<div class="navbar-header pull-left">
       <a id="room" class="navbar-brand truncate" href="#">Title Here</a>
     </div>
-    <div class="nav navbar-header pull-right">
-      <li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn" onclick="buttonToForm();">Vaihda tunnus</button></li>
+    <div class="nav pull-right">
+        <button class="btn btn-default asetukset dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          Asetukset
+        <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+          <li id="rightButton"><button id="ylaButton" class="btn btn-default" onclick="buttonToForm();">Vaihda tunnus</button></li>
+          <li role="separator" class="divider"></li>
+          <li><div class="checkbox">
+                <label><input id="autoscroll" type="checkbox" checked> Autoscroll</label></div>
+          </li>
+          <li><div class="checkbox">
+                <label><input id="yonakyma" type="checkbox" disabled> Yönäkymä</label></div>
+          </li>
+          <li role="separator" class="divider"></li>
+          <li id="roompassword"><button id="ylaButton" class="btn btn-default" onclick="buttonToForm();">Huoneen salasana</button></li>
+          <li><div class="checkbox">
+                <label><input id="yksityinen" type="checkbox"> Yksityinen huone</label></div>
+          </li>
+          <li><a href="#">Kick/Ban</a></li>
+          <li><a href="#">Tervehdysviesti</a></li>
+          <li><a href="#">Viestihistorian pituus</a></li>
+        </ul>
     </div>
     </div>
   </nav>
@@ -44,9 +65,10 @@
     <script src="/bootstrap.min.js"></script>
     <script>
     var id = localStorage.getItem('userid');
-    var socket = io('http://aurinkokuu.me', {query: "id=" + id});
+    var socket = io('http://192.168.0.125', {query: "id=" + id});
     var rowid = 0;
     var oldNick = "anon";
+    var roomname = "";
     var btn;
 
     socket.on('newUser', function(data){
@@ -59,6 +81,7 @@
     });
 
     socket.on('roomStatus', function(room){
+      roomname = room.name;
       $("#room").text("#"+ room.name + "(" + room.users + ")");
       $("title").text(oldNick + "@"+ room.name);
     });
@@ -67,6 +90,10 @@
       $('#infoMessage').text(message.message);
       $('#infoMessage').removeClass().addClass(message.type);
       //$('#infoTime').text(message.timestamp);
+    });
+
+    socket.on('noRights', function(huone){
+      window.alert('Ei oikeuksia: ' + huone);
     });
 
     socket.on('messageHistory', function(msg_hist){
@@ -94,9 +121,21 @@
       return false; // don't follow the link
     });
 
+    $('#yksityinen').change(function(){
+      if($(this).is(":checked")) {
+          //var val = confirm('Asetetaanko huone yksityiseksi? Tätä toimintoa ei voi peruuttaa');
+          socket.emit('roomToPrivate', roomname, id);
+        }
+    });
+
+    //prevent dropdown from closing on click event
+    $('.dropdown-menu').click(function(e) {
+              e.stopPropagation();
+    });
+
     function changeNick(){
       var newNick = $('#rightForm').val();
-      $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-primary navbar-btn" onclick="buttonToForm();"></button></li>');
+      $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-default" onclick="buttonToForm();"></button></li>');
       if(validInput(newNick, 32)){
         $('#ylaButton').text(newNick);
         //$('#rightButton a').text(newNick);
@@ -118,7 +157,7 @@
         var input = $('<input />', {
           'type': 'text',
           'id': 'rightForm',
-          'style': 'margin-right: 10px; margin-top: 9px; width: 250px; ',
+          'style': 'margin-left: 10px; padding-right: 10px; margin-top: 6px; width: 200px; ',
           'class': 'form-control',
           'placeholder': 'kirjoita uusi tunnus',
           'onblur': 'changeNick()'
@@ -158,9 +197,10 @@
     }
 
     function scrollToBottom(){
-      //toggle off if user is scrolling?
-      var table = $("#messageContainer");
-      table.animate({ scrollTop: table.prop("scrollHeight") - table.height()},  200);
+      if($('#autoscroll').is(":checked")){
+        var table = $("#messageContainer");
+        table.animate({ scrollTop: table.prop("scrollHeight") - table.height()},  200);
+      }
     }
 
 

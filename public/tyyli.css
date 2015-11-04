@@ -7,8 +7,15 @@ body {
   margin-bottom: 0 !important;
   background-color: #FF9933 !important;
 }
+.dropdown-menu {
+  min-width:auto;
+  width:220px;
+}
+.dropdown-menu > li {
+  text-align:center;
+ }
 .truncate {
-  width: 200px;
+  width: 60vw;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -46,6 +53,10 @@ body {
 .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
   background-color: #FFFFCC;
 }
+.asetukset{
+  margin-right: 8px;
+  margin-top: 8px;
+}
 
 #messageContainer {
   border-collapse: collapse;
@@ -61,11 +72,11 @@ body {
   width: 80%;
 }
 #rightButton {
-  padding-right: 7px;
   width: 100%;
+  padding-left: 8px;
+  padding-top: 6px;
 }
 #ylaButton {
-  color: white;
   text-decoration: none;
 }
 #rightButton :hover{

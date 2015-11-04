@@ -14,7 +14,7 @@ var rooms = {};
 var messages = 0;
 var iplog = {};
 var lastMessage = {};
-var client = redis.createClient();
+var client = redis.createClient('6379', '192.168.0.182');
 
 app.use(express.static(__dirname + '/sounds'));
 app.use(express.static(__dirname + '/public'));
@@ -31,14 +31,26 @@ io.on('connection', function(socket){
 
   var id = checkUrl(socket.request.headers.referer); //get room id from Get
   client.hgetall("room_" + id, function(err, reply){
-    if (reply) {
+    if(reply && reply.isPrivate == "true"){
+      var access = authenticate(user, reply);
+      console.log("privaattihuone: " + access);
+      if(access == "error"){
+        socket.emit('noRights', id);
+      } else if(access == "user"){
+        joinChannel(id, socket);
+      } else if(access == "admin"){
+        joinChannel(id, socket);
+      }
+    } else if (reply) {
       joinChannel(id, socket);
     } else {
       newChannel(id, socket, user);
     }
-    socket.join(id);
-    roomUserAppend(id);
-    io.to(id).emit('roomStatus', roomUpdate(id));
+  });
+
+  socket.on('roomToPrivate', function(roomname, userid){
+    console.log(roomname, userid);
+    client.hmset('room_' + roomname, 'isPrivate', true);
   });
 
   socket.on('haeViestit', function(id){
@@ -145,12 +157,23 @@ function logIP(socket){
   console.log("connection: " + ip);
 }
 
-function newChannel(name, socket, user, listed){
+function newChannel(name, socket, user){
   var id = uuid.v4();
-  ch = new Channel(id, name, user, listed);
+  ch = new Channel(id, name, user);
   socket.emit('infoMessage', serverMessage("created a new channel!"));
   client.hmset('room_' + name, ch);
   return ch;
+}
+
+function authenticate(user, room){
+  if(user == room.admin){
+    return "admin";
+  } else if (true) {
+    //user in auth_users
+    return "error";
+  } else {
+    return "error";
+  }
 }
 
 function roomUserAppend(id){
@@ -170,7 +193,9 @@ function joinChannel(name, socket){
       });
     }
   });
-
+  socket.join(name);
+  roomUserAppend(name);
+  io.to(name).emit('roomStatus', roomUpdate(name));
 }
 
 function saveMessage(msg, name){
@@ -194,14 +219,6 @@ function checkUrl(address){
   }
 
   return "LostAndFound";
-}
-
-function getSecret(address){
-  var path = url.parse(address).pathname.split('/');
-  if(path.length == 3 && path[1] == "secret"){
-    return path[2];
-  }
-  return null;
 }
 
 http.listen(3000, function(){
