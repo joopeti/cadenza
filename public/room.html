@@ -113,7 +113,10 @@
 
     $('#teksti').submit(function(){
       if(validInput($('#messageField').val(), 1000)){
-      socket.emit('sendMessage', $('#messageField').val()); //get message from field
+		var content = $('#messageField').val(); //get content from field
+		//append message locally
+		appendMessage({'content': content, 'sender': oldnick, 'timestamp': new Date().toLocaleTimeString()});
+		socket.emit('sendMessage', content);  //emit message to others
       $('#messageField').val('');          // empty message field
     } else{
       //some warning?

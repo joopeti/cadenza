@@ -67,7 +67,8 @@ io.on('connection', function(socket){
         }
         var date = new Date();
         var message = new Message(msg, sender, date.toLocaleTimeString());
-        io.to(id).emit('newMessage', message);
+	//message to everyone else except sender
+        socket.broadcast.to(id).emit('newMessage', message);
         client.incr('messages_send');
         messages++;
         saveMessage(message, id);
