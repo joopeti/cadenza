@@ -11,35 +11,40 @@
   <div id="top"></div>
   <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
   	<div class="navbar-header pull-left">
-      <a id="room" class="navbar-brand truncate" href="#">Title Here</a>
+      <a id="room" class="navbar-brand truncate" href="#">Room name</a>
     </div>
     <div class="nav pull-right">
-        <button class="btn btn-default asetukset dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        <button id="settings" class="btn btn-primary asetukset dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
           Asetukset
         <span class="caret"></span>
         </button>
         <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-          <li id="rightButton"><button id="ylaButton" class="btn btn-default" onclick="buttonToForm();">Vaihda tunnus</button></li>
+          <li id="rightButton"><button id="ylaButton" class="btn btn-warning" onclick="buttonToForm();">Vaihda tunnus</button></li>
           <li role="separator" class="divider"></li>
-          <li><div class="checkbox">
-                <label><input id="autoscroll" type="checkbox" checked> Autoscroll</label></div>
+          <div id="adminpanel">
+            <li id='roompassword'><button id='alaButton' class='btn btn-default' onclick='password();'>Huoneen salasana</button>
+            </li><li><div class='checkbox'><label><input id='yksityinen' type='checkbox'> Yksityinen huone</label></div></li>
+            <li role='separator' class='divider'></li>
+          </div>
+          <li><div class="checkbox"><label><input id="autoscroll" type="checkbox" checked> Autoscroll</label></div>
           </li>
-          <li><div class="checkbox">
-                <label><input id="yonakyma" type="checkbox" disabled> Yönäkymä</label></div>
-          </li>
-          <li role="separator" class="divider"></li>
-          <li id="roompassword"><button id="ylaButton" class="btn btn-default" onclick="buttonToForm();">Huoneen salasana</button></li>
-          <li><div class="checkbox">
-                <label><input id="yksityinen" type="checkbox"> Yksityinen huone</label></div>
-          </li>
-          <li><a href="#">Kick/Ban</a></li>
-          <li><a href="#">Tervehdysviesti</a></li>
-          <li><a href="#">Viestihistorian pituus</a></li>
         </ul>
-    </div>
     </div>
   </nav>
     <div class="container.fluid">
+      <div id="passwordPromt" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+          <div class="modal-dialog">
+            <div class="modal-content password">
+              <form id="passform" action="javascript:void(0);" onsubmit="passinput();">
+                <h2 class="form-signin-heading">Yksityinen huone</h2>
+                <p>Anna salasana jatkaaksesi</p>
+                <input type="text" id="inputPassword" class="form-control" placeholder="Salasana" required autofocus autocomplete="off">
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Kirjaudu</button>
+              </form>
+            </div>
+          </div>
+      </div>
+    </div>
       <div id="messageContainer">
         <table id="messageBox" class="table table-hover table-condensed striped">
             <tbody>
@@ -75,25 +80,34 @@
       localStorage.setItem('userid', data);
     });
 
+    socket.on('access', function(access, isPrivate){
+      console.log(access, isPrivate);
+      if(access == "user" || !access){
+        $('#adminpanel').empty();
+      } else{
+        if(isPrivate == "true"){
+          $('#yksityinen').prop('checked', true);
+        }
+      }
+    });
+
     socket.on('userStatus', function(userdata){
       oldNick = userdata;
       $("#ylaButton").text(userdata);
+      $("#ylaButton").removeClass('btn-warning').addClass('btn-success');
     });
 
     socket.on('roomStatus', function(room){
       roomname = room.name;
       $("#room").text("#"+ room.name + "(" + room.users + ")");
       $("title").text(oldNick + "@"+ room.name);
+      $('#passwordPromt').modal('hide');
     });
 
     socket.on('infoMessage', function(message){
       $('#infoMessage').text(message.message);
       $('#infoMessage').removeClass().addClass(message.type);
       //$('#infoTime').text(message.timestamp);
-    });
-
-    socket.on('noRights', function(huone){
-      window.alert('Ei oikeuksia: ' + huone);
     });
 
     socket.on('messageHistory', function(msg_hist){
@@ -104,31 +118,53 @@
       scrollToBottom();
     });
 
+    socket.on('passwordPromt', function(info){
+      $('#passwordPromt').modal('show');
+      $('#passform > p').text(info);
+      $('#passform > p').addClass('error');
+    });
+
     socket.on('newMessage', function(message){
-      appendMessage(message);
-      $('#infoMessage').text("last message: " + message.timestamp);
-      $('#infoMessage').removeClass().addClass("normal");
-      scrollToBottom();
+      newMessage(message, false);
+    });
+
+    function passinput(){
+      var input = $('#inputPassword').val();
+      console.log(input);
+      if(validInput(input, 32)){
+        $('#inputPassword').val('');
+        socket.emit('userLogin', input);
+      }
+      return false;
+    }
+
+    $('#ylaButton').click(function(){
+      buttonToForm($(this), 'newNick');
+    });
+
+    $('#roompw').click(function(){
+      buttonToForm($(this), "roompassword");
     });
 
     $('#teksti').submit(function(){
       if(validInput($('#messageField').val(), 1000)){
-		var content = $('#messageField').val(); //get content from field
-		//append message locally
-		appendMessage({'content': content, 'sender': oldnick, 'timestamp': new Date().toLocaleTimeString()});
-		socket.emit('sendMessage', content);  //emit message to others
-      $('#messageField').val('');          // empty message field
-    } else{
-      //some warning?
-    }
-      return false; // don't follow the link
+    		var content = $('#messageField').val(); //get content from field
+    		socket.emit('sendMessage', content);
+        $('#messageField').val('');          // empty message field
+        } else{
+          //some warning?
+        }
+        return false; // don't follow the link
     });
 
-    $('#yksityinen').change(function(){
+    $('#yksityinen').click(function(){
       if($(this).is(":checked")) {
           //var val = confirm('Asetetaanko huone yksityiseksi? Tätä toimintoa ei voi peruuttaa');
-          socket.emit('roomToPrivate', roomname, id);
-        }
+          socket.emit('roomToggle', "true");
+      } else {
+          //var val = confirm('Asetetaanko huone yksityiseksi? Tätä toimintoa ei voi peruuttaa');
+          socket.emit('roomToggle', "false");
+      }
     });
 
     //prevent dropdown from closing on click event
@@ -141,7 +177,7 @@
       $('#nick').replaceWith('<li id="rightButton"><button id="ylaButton" class="btn btn-default" onclick="buttonToForm();"></button></li>');
       if(validInput(newNick, 32)){
         $('#ylaButton').text(newNick);
-        //$('#rightButton a').text(newNick);
+        $("#ylaButton").removeClass('btn-warning').addClass('btn-success');
         socket.emit('changeNick', newNick);
         oldNick = newNick;
       } else{
@@ -150,24 +186,61 @@
       return false;
     }
 
+    function newRoomPass(){
+      var newPass = $('#password').val();
+      if(validInput(newPass, 32)){
+        $('#alaButton').text("Huoneen salasana");
+        $('#roompass').replaceWith('<li id="roompassword"><button id="alaButton" class="btn btn-success" onclick="password();">Salasana asetettu</button></li>');
+        socket.emit('newRoomPass', newPass);
+      } else{
+        $('#roompass').replaceWith('<li id="roompassword"><button id="alaButton" class="btn btn-warning" onclick="password();">Salasanaa ei muutettu</button></li>');
+      }
+      return false;
+    }
+
+    function newMessage(message, json){
+      appendMessage(message, json);
+      $('#infoMessage').text("last message: " + message.timestamp);
+      $('#infoMessage').removeClass().addClass("normal");
+      scrollToBottom();
+    }
+
     function buttonToForm(){
-        btn = $('#rightButton');
-        var form = $('<form>', {
-          'id': 'nick',
-          'action': "javascript:void(0);",
-          'onsubmit': 'changeNick()'
-        });
-        var input = $('<input />', {
-          'type': 'text',
-          'id': 'rightForm',
-          'style': 'margin-left: 10px; padding-right: 10px; margin-top: 6px; width: 200px; ',
-          'class': 'form-control',
-          'placeholder': 'kirjoita uusi tunnus',
-          'onblur': 'changeNick()'
-        });
-        form.append(input);
-        $('#rightButton').replaceWith(form);
-        $('#rightForm').focus();
+      btn = $('#rightButton');
+      var form = $('<form>', {
+        'id': 'nick',
+        'action': "javascript:void(0);",
+        'onsubmit': 'changeNick()'
+      });
+      var input = $('<input />', {
+        'type': 'text',
+        'id': 'rightForm',
+        'class': 'form-control',
+        'placeholder': 'kirjoita uusi tunnus',
+        'onblur': 'changeNick()'
+      });
+      form.append(input);
+      $('#rightButton').replaceWith(form);
+      $('#rightForm').focus();
+    }
+
+    function password(){
+      btn = $('#roompassword');
+      var form = $('<form>', {
+        'id': 'roompass',
+        'action': "javascript:void(0);",
+        'onsubmit': 'newRoomPass();'
+      });
+      var input = $('<input />', {
+        'type': 'password',
+        'id': 'password',
+        'class': 'form-control',
+        'placeholder': 'kirjoita huoneen salasana',
+        'onblur': 'newRoomPass();'
+      });
+      form.append(input);
+      $('#roompassword').replaceWith(form);
+      $('#password').focus();
     }
 
     function validInput(string, len){

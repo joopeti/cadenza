@@ -11,7 +11,7 @@ body {
   min-width:auto;
   width:220px;
 }
-.dropdown-menu > li {
+.dropdown-menu > li, .dropdown-menu > div{
   text-align:center;
  }
 .truncate {
@@ -19,6 +19,12 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.password {
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-bottom: 5px;
+  text-align: center;
 }
 #top {
   height: 50px;
@@ -101,9 +107,16 @@ body {
   font-size: 12px;
 }
 #rightForm {
-  margin-right: 10px;
-  margin-top: 9px;
-  width: 100%;
+  margin-left: 10px;
+  padding-right: 10px;
+  margin-top: 6px;
+  width: 200px;
+}
+#password {
+  margin-left: 10px;
+  padding-right: 10px;
+  margin-top: 6px;
+  width: 200px;
 }
 #infoMessage {
   text-align: center;

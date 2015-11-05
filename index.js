@@ -26,35 +26,45 @@ app.get('/room/*', function(req, res){
 io.on('connection', function(socket){
   //socket.emit('mainInfo', {'msg': messages, 'users': users, 'rooms': Object.keys(rooms).length});
   logIP(socket);
-  var user = checkUser(socket);
   users++;
-
+  var user = checkUser(socket);
   var id = checkUrl(socket.request.headers.referer); //get room id from Get
-  client.hgetall("room_" + id, function(err, reply){
-    if(reply && reply.isPrivate == "true"){
-      var access = authenticate(user, reply);
-      console.log("privaattihuone: " + access);
-      if(access == "error"){
-        socket.emit('noRights', id);
-      } else if(access == "user"){
-        joinChannel(id, socket);
-      } else if(access == "admin"){
-        joinChannel(id, socket);
-      }
-    } else if (reply) {
-      joinChannel(id, socket);
+  client.hgetall("room_" + id, function(err, room){
+    if(room){
+      joinChannel(id, socket, user, room);
     } else {
       newChannel(id, socket, user);
     }
   });
 
-  socket.on('roomToPrivate', function(roomname, userid){
-    console.log(roomname, userid);
-    client.hmset('room_' + roomname, 'isPrivate', true);
+  socket.on('newRoomPass', function(newPass){
+    console.log(id, newPass);
+    client.hgetall('room_' + id, function(err, reply){
+      if(reply && reply.admin == user){
+        client.hmset('room_' + id, 'secret', newPass);
+      } else{
+        console.log("unauthorized access: " + socket.id, user);
+      }
+    });
+  });
+  socket.on('userLogin', function(password){
+    client.hgetall('room_' + id, function(err, room){
+      if(room && room.secret == password){
+        client.hmset('access_' + id, user, "user");
+        joinChannel(id, socket, user, room);
+      } else{
+        socket.emit('passwordPromt', 'väärä salasana');
+      }
+    });
   });
 
-  socket.on('haeViestit', function(id){
-    var i = rooms[id].getMessages(5);
+  socket.on('roomToggle', function(value){
+    console.log("tog" + value);
+    client.hgetall('room_' + id, function(err, reply){
+      if(reply && reply.admin == user){
+        client.hmset('room_' + id, 'isPrivate', value);
+        }
+      });
   });
 
   socket.on('sendMessage', function(msg){
@@ -67,9 +77,9 @@ io.on('connection', function(socket){
         }
         var date = new Date();
         var message = new Message(msg, sender, date.toLocaleTimeString());
-	//message to everyone else except sender
-        socket.broadcast.to(id).emit('newMessage', message);
-        client.incr('messages_send');
+	       //message to everyone else except sender
+        io.to(id).emit('newMessage', message);
+        //client.incr('messages_send');
         messages++;
         saveMessage(message, id);
       });
@@ -93,7 +103,6 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(){
     rooms[id] = rooms[id] - 1;
-    socket.emit('infoMessage', serverMessage('connection lost', 'normal'));
     io.to(id).emit('roomStatus', roomUpdate(id));
     //io.to(id).emit('infoMessage', serverMessage('user disconnected'));
     users--;
@@ -163,18 +172,12 @@ function newChannel(name, socket, user){
   ch = new Channel(id, name, user);
   socket.emit('infoMessage', serverMessage("created a new channel!"));
   client.hmset('room_' + name, ch);
+  client.hmset('access_' + name, user, "admin");
+  socket.emit('access', "admin", "false");
+  socket.join(name);
+  roomUserAppend(name);
+  io.to(name).emit('roomStatus', roomUpdate(name));
   return ch;
-}
-
-function authenticate(user, room){
-  if(user == room.admin){
-    return "admin";
-  } else if (true) {
-    //user in auth_users
-    return "error";
-  } else {
-    return "error";
-  }
 }
 
 function roomUserAppend(id){
@@ -185,18 +188,29 @@ function roomUserAppend(id){
   }
 }
 
-function joinChannel(name, socket){
+function channelInit(name, socket, room, access){
   socket.emit('infoMessage', serverMessage("connection established"));
-  client.hgetall('room_' + name, function(err, reply){
-    if(reply){
-      client.lrange(reply.id, 0, -1, function(err, msg){
-        socket.emit('messageHistory', msg);
-      });
-    }
+  client.lrange(room.id, 0, -1, function(err, msg){
+    socket.emit('messageHistory', msg);
   });
+  socket.emit('access', access, room.isPrivate);
   socket.join(name);
   roomUserAppend(name);
   io.to(name).emit('roomStatus', roomUpdate(name));
+}
+
+function joinChannel(name, socket, user, room){
+    client.hgetall('access_' + name, function(err, access){
+      if(room.isPrivate == "true"){
+        if(user in access){
+          channelInit(name, socket, room, access[user]);
+        } else{
+          socket.emit('passwordPromt');
+        }
+      } else{
+        channelInit(name, socket, room, access[user]);
+      }
+    });
 }
 
 function saveMessage(msg, name){

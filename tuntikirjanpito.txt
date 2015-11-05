@@ -20,3 +20,7 @@ pe 6.10, 3h
 	-spämmifiltteri, syötteiden tarkistus serverillä
 ma 2.11, 3h
 	-redis tietokannan käyttöönottoa
+ke 4.11, 6h
+	-admin-paneeli ja yksityisten kanavien alku
+to 5.11, 2h
+	-yksityiset kanavat loppuun
