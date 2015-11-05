@@ -159,10 +159,8 @@
 
     $('#yksityinen').click(function(){
       if($(this).is(":checked")) {
-          //var val = confirm('Asetetaanko huone yksityiseksi? Tätä toimintoa ei voi peruuttaa');
           socket.emit('roomToggle', "true");
       } else {
-          //var val = confirm('Asetetaanko huone yksityiseksi? Tätä toimintoa ei voi peruuttaa');
           socket.emit('roomToggle', "false");
       }
     });

@@ -177,7 +177,6 @@ function newChannel(name, socket, user){
   socket.join(name);
   roomUserAppend(name);
   io.to(name).emit('roomStatus', roomUpdate(name));
-  return ch;
 }
 
 function roomUserAppend(id){
