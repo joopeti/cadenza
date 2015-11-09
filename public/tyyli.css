@@ -5,8 +5,10 @@ body {
 }
 .navbar {
   margin-bottom: 0 !important;
-  background-color: #FF9933 !important;
+  background-color: #202020 !important;
+  min-height:30px !important;
 }
+
 .dropdown-menu {
   min-width:auto;
   width:220px;
@@ -15,7 +17,7 @@ body {
   text-align:center;
  }
 .truncate {
-  width: 60vw;
+  max-width: 60vw;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -43,7 +45,7 @@ body {
 }
 
 .striped > tbody > tr:nth-of-type(odd){
-  background-color: #F5FAFF;
+  background-color: #F2F9FF;
   border-top: none;
 }
 .table {

@@ -13,14 +13,24 @@ var users = 0;
 var rooms = {};
 var messages = 0;
 var iplog = {};
+var joined = {};
 var lastMessage = {};
+var loginTries = {};
 var client = redis.createClient('6379', '192.168.0.182');
 
 app.use(express.static(__dirname + '/sounds'));
 app.use(express.static(__dirname + '/public'));
 
+app.get('/index.html', function(req, res){
+  res.sendFile(__dirname + '/public/index.html');
+});
+
 app.get('/room/*', function(req, res){
   res.sendFile(__dirname + '/public/room.html');
+});
+
+app.get('*', function(req, res){
+  res.redirect('https://www.youtube.com/watch?v=JH8gvhl4rH8');
 });
 
 io.on('connection', function(socket){
@@ -52,8 +62,10 @@ io.on('connection', function(socket){
       if(room && room.secret == password){
         client.hmset('access_' + id, user, "user");
         joinChannel(id, socket, user, room);
+        joined = true;
       } else{
-        socket.emit('passwordPromt', 'väärä salasana');
+        client.setex("tries_" + user, 3600, 5);
+        socket.emit('passwordPromt', 'väärä salasana, yrityksiä jäljellä: ');
       }
     });
   });
@@ -102,8 +114,11 @@ io.on('connection', function(socket){
   });
 
   socket.on('disconnect', function(){
-    rooms[id] = rooms[id] - 1;
-    io.to(id).emit('roomStatus', roomUpdate(id));
+    if(joined[socket.id]){
+      rooms[id] = rooms[id] - 1;
+      joined[socket.id] = false;
+      io.to(id).emit('roomStatus', roomUpdate(id));
+    }
     //io.to(id).emit('infoMessage', serverMessage('user disconnected'));
     users--;
   });
@@ -175,6 +190,7 @@ function newChannel(name, socket, user){
   client.hmset('access_' + name, user, "admin");
   socket.emit('access', "admin", "false");
   socket.join(name);
+  joined[socket.id] = true;
   roomUserAppend(name);
   io.to(name).emit('roomStatus', roomUpdate(name));
 }
@@ -194,6 +210,7 @@ function channelInit(name, socket, room, access){
   });
   socket.emit('access', access, room.isPrivate);
   socket.join(name);
+  joined[socket.id] = true;
   roomUserAppend(name);
   io.to(name).emit('roomStatus', roomUpdate(name));
 }
@@ -235,6 +252,6 @@ function checkUrl(address){
   return "LostAndFound";
 }
 
-http.listen(3000, function(){
-  console.log('kuunnellaan: 3000');
+http.listen(80, function(){
+  console.log('kuunnellaan: 80');
 });

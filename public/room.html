@@ -22,8 +22,8 @@
           <li id="rightButton"><button id="ylaButton" class="btn btn-warning" onclick="buttonToForm();">Vaihda tunnus</button></li>
           <li role="separator" class="divider"></li>
           <div id="adminpanel">
-            <li id='roompassword'><button id='alaButton' class='btn btn-default' onclick='password();'>Huoneen salasana</button>
-            </li><li><div class='checkbox'><label><input id='yksityinen' type='checkbox'> Yksityinen huone</label></div></li>
+            <li><div class='checkbox'><label><input id='yksityinen' type='checkbox'> Yksityinen huone</label></div></li>
+            <li id='roompassword'><button id='alaButton' class='btn btn-default' onclick='password();'>Huoneen salasana</button></li>
             <li role='separator' class='divider'></li>
           </div>
           <li><div class="checkbox"><label><input id="autoscroll" type="checkbox" checked> Autoscroll</label></div>
@@ -119,6 +119,10 @@
     });
 
     socket.on('passwordPromt', function(info){
+      $('#passwordPromt').modal({
+        backdrop: 'static',
+        keyboard: false
+      });
       $('#passwordPromt').modal('show');
       $('#passform > p').text(info);
       $('#passform > p').addClass('error');
@@ -137,6 +141,7 @@
       }
       return false;
     }
+
 
     $('#ylaButton').click(function(){
       buttonToForm($(this), 'newNick');
@@ -169,6 +174,13 @@
     $('.dropdown-menu').click(function(e) {
               e.stopPropagation();
     });
+
+    function linkify(text) {
+        var urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        return text.replace(urlRegex, function(url) {
+            return '<a href="' + url + '">' + url + '</a>';
+        });
+    }
 
     function changeNick(){
       var newNick = $('#rightForm').val();
