@@ -119,6 +119,9 @@
     });
 
     socket.on('passwordPromt', function(info){
+      if(info == "banned"){
+        window.location.replace("http://aurinkopuu.me/room/dementia");
+      }
       $('#passwordPromt').modal({
         backdrop: 'static',
         keyboard: false
@@ -216,7 +219,6 @@
     }
 
     function buttonToForm(){
-      btn = $('#rightButton');
       var form = $('<form>', {
         'id': 'nick',
         'action': "javascript:void(0);",
@@ -235,7 +237,6 @@
     }
 
     function password(){
-      btn = $('#roompassword');
       var form = $('<form>', {
         'id': 'roompass',
         'action': "javascript:void(0);",

@@ -24,3 +24,5 @@ ke 4.11, 6h
 	-admin-paneeli ja yksityisten kanavien alku
 to 5.11, 2h
 	-yksityiset kanavat loppuun
+ma 9.11, 4h
+	-404-sivu, online-käyttäjien laskuri korjattu

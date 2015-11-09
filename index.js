@@ -57,17 +57,21 @@ io.on('connection', function(socket){
       }
     });
   });
+
   socket.on('userLogin', function(password){
-    client.hgetall('room_' + id, function(err, room){
-      if(room && room.secret == password){
-        client.hmset('access_' + id, user, "user");
-        joinChannel(id, socket, user, room);
-        joined = true;
-      } else{
-        client.setex("tries_" + user, 3600, 5);
-        socket.emit('passwordPromt', 'väärä salasana, yrityksiä jäljellä: ');
-      }
-    });
+    loginTries[user] = (loginTries[user] + 1) || 1;
+    if(loginTries[user] < 5){
+      client.hgetall('room_' + id, function(err, room){
+        if(room && room.secret == password){
+          client.hmset('access_' + id, user, "user");
+          joinChannel(id, socket, user, room);
+        } else{
+          socket.emit('passwordPromt', 'väärä salasana, yrityksiä jäljellä ' + (5 - loginTries[user]));
+        }
+      });
+    } else{
+      socket.emit('passwordPromt', 'banned');
+    }
   });
 
   socket.on('roomToggle', function(value){
