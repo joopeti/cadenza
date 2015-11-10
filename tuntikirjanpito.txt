@@ -1,3 +1,6 @@
+
+!! Aihe vaihtui kesken toteutuksen !! (alkuper‰inen: mahdollisuus soittaa selaimen kautta reaaliajassa pianoa toisten k‰ytt‰jien kanssa)
+
 pe 16.10, 6h
 	ensimm‰inen proto: node.js ja socket.js
 	-pystyy soittamaan reaaliajassa html5-‰‰ni‰ etusivulla
@@ -7,6 +10,9 @@ la 17.10, 6h
 
 ma 19.10, 6h
 	-lis‰ttiin huoneet, eli vain samassa huoneessa olevat voivat kuulla toisensa. Huoneisiin voi liitty‰ osoiterivin kautta.
+
+!! Aihe vaihtui kesken toteutuksen !!
+
 ti 20.10, 6h
 	-lis‰t‰‰n keskustelumahdollisuus, huone-objekti
 	bootstrap alkua, jquery alkeita
