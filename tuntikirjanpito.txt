@@ -1,5 +1,6 @@
 
-!! Aihe vaihtui kesken toteutuksen !! (alkuperäinen: mahdollisuus soittaa selaimen kautta reaaliajassa pianoa toisten käyttäjien kanssa)
+!! Aihe vaihtui kesken toteutuksen !! 
+(alkuperäinen: mahdollisuus soittaa selaimen kautta reaaliajassa pianoa toisten käyttäjien kanssa)
 
 pe 16.10, 6h
 	ensimmäinen proto: node.js ja socket.js
