@@ -70,7 +70,7 @@
     <script src="/bootstrap.min.js"></script>
     <script>
     var id = localStorage.getItem('userid');
-    var socket = io('http://aurinkokuu.me', {query: "id=" + id});
+    var socket = io(window.location.host, {query: "id=" + id});
     var rowid = 0;
     var oldNick = "anon";
     var roomname = "";
@@ -120,7 +120,7 @@
 
     socket.on('passwordPromt', function(info){
       if(info == "banned"){
-        window.location.replace("http://aurinkokuu.me/room/dementia");
+        window.location.replace(window.location.host + "/room/dementia");
       }
       $('#passwordPromt').modal({
         backdrop: 'static',
