@@ -258,6 +258,6 @@ function checkUrl(address){
   return "LostAndFound";
 }
 
-http.listen(80, function(){
-  console.log('kuunnellaan: 80');
+http.listen(3000, function(){
+  console.log('kuunnellaan: 3000');
 });
