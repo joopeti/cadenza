@@ -7,7 +7,9 @@ var uuid = require('node-uuid');
 var redis = require('redis');
 var Channel = require('./channel.js');
 var Message = require('./message.js');
-var Queue = require('./queue.js');
+
+const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
+const REDIS_PORT = process.env.REDIS_PORT || 6379;
 
 var users = 0;
 var rooms = {};
@@ -16,7 +18,7 @@ var iplog = {};
 var joined = {};
 var lastMessage = {};
 var loginTries = {};
-var client = redis.createClient();
+var client = redis.createClient(REDIS_PORT, REDIS_HOST);
 
 app.use(express.static(__dirname + '/sounds'));
 app.use(express.static(__dirname + '/public'));

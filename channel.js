@@ -1,5 +1,3 @@
-var Queue = require('./queue.js');
-
 function Channel(id, name, user) {
   this.id = id;
   this.name = name;
